@@ -1,0 +1,10 @@
+/node_modules/
+/vendor/
+# Built by CI and attached to release tags; main stays source-only (docs/RELEASE.md).
+/build/
+/dist/
+*.zip
+.DS_Store
+/example/
+# Machine-specific WP-CLI target, see AGENTS.md.
+/wp-cli.local.yml

@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<ruleset name="IsuDev Media Directory">
+	<description>WordPress Coding Standards for the isudev-media-directory plugin.</description>
+
+	<file>.</file>
+	<arg name="extensions" value="php"/>
+	<arg name="basepath" value="."/>
+	<arg name="colors"/>
+	<arg value="sp"/>
+
+	<exclude-pattern>*/build/*</exclude-pattern>
+	<exclude-pattern>*/node_modules/*</exclude-pattern>
+	<exclude-pattern>*/vendor/*</exclude-pattern>
+	<exclude-pattern>*/languages/*</exclude-pattern>
+	<exclude-pattern>*/example/*</exclude-pattern>
+
+	<rule ref="WordPress">
+		<!-- Hooks are intentionally namespaced with a slash (isudev_media_directory/foo). -->
+		<exclude name="WordPress.NamingConventions.ValidHookName.UseUnderscores"/>
+	</rule>
+
+	<config name="minimum_wp_version" value="7.0"/>
+	<config name="testVersion" value="7.4-"/>
+
+	<rule ref="WordPress.WP.I18n">
+		<properties>
+			<property name="text_domain" type="array">
+				<element value="isudev-media-directory"/>
+			</property>
+		</properties>
+	</rule>
+
+	<rule ref="WordPress.NamingConventions.PrefixAllGlobals">
+		<properties>
+			<property name="prefixes" type="array">
+				<element value="IsuDevMediaDirectory"/>
+				<element value="isudev_media_directory"/>
+			</property>
+		</properties>
+	</rule>
+</ruleset>

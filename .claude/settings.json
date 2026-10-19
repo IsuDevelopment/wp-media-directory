@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run build)",
+      "Bash(npm run check)",
+      "Bash(npm run lint:*)",
+      "Bash(npm run test:*)",
+      "Bash(npm run i18n:*)",
+      "Bash(npm run format)",
+      "Bash(vendor/bin/phpcs:*)",
+      "Bash(vendor/bin/phpcbf:*)",
+      "Bash(php tools/check-translations.php)",
+      "Bash(wp eval-file tools/smoke.php)",
+      "Bash(wp media-directory list:*)"
+    ]
+  }
+}

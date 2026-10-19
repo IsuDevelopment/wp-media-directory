@@ -1,0 +1,123 @@
+name: Build & Release
+
+# A version bump in the plugin header on main is a release. See docs/RELEASE.md.
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'isudev-media-directory.php'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Build and release plugin
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: composer:v2
+
+      - name: Check version agrees everywhere
+        id: version
+        run: echo "version=$(php tools/check-version.php)" >> "$GITHUB_OUTPUT"
+
+      - name: Skip when the tag already exists
+        id: tag_check
+        run: |
+          if git rev-parse "refs/tags/v${{ steps.version.outputs.version }}" >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "::notice::v${{ steps.version.outputs.version }} is already released; nothing to do."
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Install Composer dependencies (runtime only)
+        if: steps.tag_check.outputs.exists == 'false'
+        run: composer install --no-dev --optimize-autoloader --no-interaction
+
+      - name: Set up Node
+        if: steps.tag_check.outputs.exists == 'false'
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: npm
+
+      - name: Build assets
+        if: steps.tag_check.outputs.exists == 'false'
+        run: |
+          npm ci
+          npm run build
+
+      - name: Check translations
+        if: steps.tag_check.outputs.exists == 'false'
+        run: php tools/check-translations.php
+
+      # main stays source-only. The tag carries build/ too, so Composer installs from a tag
+      # get a runnable plugin without a build step.
+      - name: Tag the release with built assets
+        if: steps.tag_check.outputs.exists == 'false'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -f build
+          git commit -m "Build v${{ steps.version.outputs.version }}"
+          git tag "v${{ steps.version.outputs.version }}"
+          git push origin "v${{ steps.version.outputs.version }}"
+
+      # .distignore is the one exclude list. The zip re-includes vendor/ (the update checker),
+      # which .distignore drops for the wordpress.org build.
+      - name: Build plugin zip
+        if: steps.tag_check.outputs.exists == 'false'
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          grep -v '^/vendor$' .distignore > /tmp/zip-exclude
+          echo '/dist' >> /tmp/zip-exclude
+          mkdir -p dist/isudev-media-directory
+          rsync -a --exclude-from=/tmp/zip-exclude ./ dist/isudev-media-directory/
+          cd dist && zip -qr "../isudev-media-directory-${VERSION}.zip" isudev-media-directory
+
+      - name: Assert zip contents
+        if: steps.tag_check.outputs.exists == 'false'
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          LIST=$(unzip -Z1 "isudev-media-directory-${VERSION}.zip")
+          for f in isudev-media-directory/isudev-media-directory.php isudev-media-directory/build/index.js \
+                   isudev-media-directory/build/index.asset.php isudev-media-directory/vendor/autoload.php \
+                   isudev-media-directory/languages/isudev-media-directory-pl_PL.mo isudev-media-directory/uninstall.php; do
+            echo "$LIST" | grep -qx "$f" || { echo "::error::missing $f"; exit 1; }
+          done
+          if echo "$LIST" | grep -E '^isudev-media-directory/(src|node_modules|tools|docs|example|\.git|\.claude)/'; then
+            echo "::error::development files in the zip"; exit 1
+          fi
+
+      - name: Release notes from CHANGELOG
+        if: steps.tag_check.outputs.exists == 'false'
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: awk -v v="$VERSION" '$0 ~ "^## "v {f=1; next} /^## / {f=0} f' CHANGELOG.md > /tmp/notes.md
+
+      - name: Create GitHub release
+        if: steps.tag_check.outputs.exists == 'false'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.version.outputs.version }}
+          name: v${{ steps.version.outputs.version }}
+          body_path: /tmp/notes.md
+          files: isudev-media-directory-${{ steps.version.outputs.version }}.zip

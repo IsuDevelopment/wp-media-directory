@@ -1,0 +1,10 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "isudev-library",
+      "url": "http://isudev-library.local/wp-admin/upload.php",
+      "port": 80
+    }
+  ]
+}
