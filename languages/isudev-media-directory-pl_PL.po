@@ -66,24 +66,25 @@ msgstr "Nie masz uprawnień do usunięcia części tych plików."
 msgid "No files you can edit were selected."
 msgstr "Nie zaznaczono plików, które możesz edytować."
 
-#: includes/settings.php:163
 #: includes/settings.php:164
-#: includes/settings.php:281
+#: includes/settings.php:165
+#: includes/settings.php:336
 #: build/index.js:18
 msgid "Folder settings"
 msgstr "Ustawienia folderów"
 
+#: build/index.js:20
 #: build/index.js:21
 msgid "Subfolders"
 msgstr "Podfoldery"
 
 #: includes/import.php:378
-#: includes/settings.php:509
+#: includes/settings.php:565
 msgid "Import folders"
 msgstr "Importuj foldery"
 
 #: includes/rest.php:78
-#: includes/settings.php:574
+#: includes/settings.php:630
 msgid "Sorry, you are not allowed to do that."
 msgstr "Niestety, nie masz uprawnień, aby to zrobić."
 
@@ -255,7 +256,7 @@ msgstr "Nowy folder w „%s”"
 msgid "New folder"
 msgstr "Nowy folder"
 
-#: build/index.js:18
+#: build/index.js:17
 msgid "Show files from subfolders"
 msgstr "Pokaż pliki z podfolderów"
 
@@ -428,96 +429,98 @@ msgstr "Usuwa foldery"
 msgid "Delete folders that hold files or subfolders"
 msgstr "Usuwa foldery z plikami lub podfolderami"
 
-#: includes/settings.php:275
+#: includes/settings.php:330
 msgid "General"
 msgstr "Ogólne"
 
-#: includes/settings.php:276
+#: includes/settings.php:331
+#: includes/settings.php:404
 msgid "Permissions"
 msgstr "Uprawnienia"
 
-#: includes/settings.php:277
+#: includes/settings.php:332
+#: includes/settings.php:471
 msgid "Import"
 msgstr "Import"
 
-#: includes/settings.php:347
+#: includes/settings.php:404
 msgid "Choose what each role can do with folders. Only roles that can upload files are listed."
 msgstr "Wybierz, co każda rola może robić z folderami. Lista zawiera tylko role, które mogą wgrywać pliki."
 
-#: includes/settings.php:354
+#: includes/settings.php:408
 msgid "Role"
 msgstr "Rola"
 
-#: includes/settings.php:390
+#: includes/settings.php:444
 msgid "Administrators can always do everything. Organizing, creating or deleting includes seeing folders. Empty folders can be deleted by anyone who can create them, so a new folder can be undone. Permanently deleting files still follows WordPress’ own rules."
 msgstr "Administratorzy zawsze mogą wszystko. Porządkowanie, tworzenie i usuwanie obejmuje widzenie folderów. Puste foldery może usunąć każdy, kto może je tworzyć, dzięki czemu da się cofnąć utworzenie folderu. Trwałe usuwanie plików nadal podlega regułom WordPressa."
 
-#: includes/settings.php:416
+#: includes/settings.php:471
 msgid "Copy folders and which file sits where from another media folder plugin. Its own data is not changed, and an import can be repeated: it only adds what is missing."
 msgstr "Skopiuj foldery i przypisania plików z innej wtyczki do folderów mediów. Jej dane nie są zmieniane, a import można powtórzyć: doda tylko to, czego brakuje."
 
-#: includes/settings.php:423
+#: includes/settings.php:474
 msgid "Nothing to import from"
 msgstr "Brak danych do importu"
 
-#: includes/settings.php:455
+#: includes/settings.php:511
 msgid "The plugin is still active."
 msgstr "Wtyczka jest nadal aktywna."
 
-#: includes/settings.php:464
+#: includes/settings.php:520
 msgid "Where to put the folders"
 msgstr "Gdzie umieścić foldery"
 
-#: includes/settings.php:468
+#: includes/settings.php:524
 msgid "Merge with my folders"
 msgstr "Scal z moimi folderami"
 
 #. translators: %d: number of folders.
-#: includes/settings.php:476
+#: includes/settings.php:532
 msgid "%d top-level folder has the same name as one of yours and will be combined with it."
 msgid_plural "%d top-level folders have the same name as yours and will be combined with them."
 msgstr[0] "%d folder najwyższego poziomu ma taką samą nazwę jak jeden z Twoich i zostanie z nim połączony."
 msgstr[1] "%d foldery najwyższego poziomu mają takie same nazwy jak Twoje i zostaną z nimi połączone."
 msgstr[2] "%d folderów najwyższego poziomu ma takie same nazwy jak Twoje i zostanie z nimi połączonych."
 
-#: includes/settings.php:481
+#: includes/settings.php:537
 msgid "Folders with the same name in the same place are combined."
 msgstr "Foldery o tej samej nazwie w tym samym miejscu zostaną połączone."
 
 #. translators: %s: plugin name.
-#: includes/settings.php:493
+#: includes/settings.php:549
 msgid "Put everything in a new folder “%s”"
 msgstr "Umieść wszystko w nowym folderze „%s”"
 
-#: includes/settings.php:505
+#: includes/settings.php:561
 msgid "Also copy HappyFiles folder access per role to Permissions"
 msgstr "Skopiuj też dostęp do folderów HappyFiles dla ról do Uprawnień"
 
 #. translators: %s: plugin name.
-#: includes/settings.php:523
+#: includes/settings.php:579
 msgid "After importing you can delete %s’s folder data from the database. Files stay in the library; only that plugin’s folders and assignments are removed. This cannot be undone."
 msgstr "Po imporcie możesz usunąć z bazy dane folderów wtyczki %s. Pliki zostają w bibliotece; znikają tylko foldery i przypisania tej wtyczki. Tej operacji nie można cofnąć."
 
 #. translators: %s: plugin name.
-#: includes/settings.php:535
+#: includes/settings.php:591
 msgid "Deactivate %s first."
 msgstr "Najpierw dezaktywuj %s."
 
-#: includes/settings.php:545
+#: includes/settings.php:601
 msgid "I understand this cannot be undone"
 msgstr "Rozumiem, że tego nie można cofnąć"
 
 #. translators: %s: plugin name.
-#: includes/settings.php:552
+#: includes/settings.php:608
 msgid "Delete %s folder data"
 msgstr "Usuń dane folderów %s"
 
-#: includes/settings.php:584
+#: includes/settings.php:640
 msgid "Unknown import source."
 msgstr "Nieznane źródło importu."
 
 #. translators: %d: number of roles.
-#: includes/settings.php:617
+#: includes/settings.php:673
 msgid "Folder access copied for %d role."
 msgid_plural "Folder access copied for %d roles."
 msgstr[0] "Skopiowano dostęp do folderów dla %d roli."
@@ -525,79 +528,95 @@ msgstr[1] "Skopiowano dostęp do folderów dla %d ról."
 msgstr[2] "Skopiowano dostęp do folderów dla %d ról."
 
 #. translators: %d: number of users.
-#: includes/settings.php:624
+#: includes/settings.php:680
 msgid "%d user had personal HappyFiles access; personal settings are not supported, so they now follow their role."
 msgid_plural "%d users had personal HappyFiles access; personal settings are not supported, so they now follow their role."
 msgstr[0] "%d użytkownik miał własny dostęp w HappyFiles; ustawienia indywidualne nie są obsługiwane, więc teraz obowiązuje go jego rola."
 msgstr[1] "%d użytkowników miało własny dostęp w HappyFiles; ustawienia indywidualne nie są obsługiwane, więc teraz obowiązują ich ich role."
 msgstr[2] "%d użytkowników miało własny dostęp w HappyFiles; ustawienia indywidualne nie są obsługiwane, więc teraz obowiązują ich ich role."
 
-#: includes/settings.php:645
+#: includes/settings.php:701
 msgid "Nothing was deleted: please tick the confirmation box."
 msgstr "Nic nie usunięto: zaznacz pole potwierdzenia."
 
 #. translators: %s: plugin name.
-#: includes/settings.php:656
+#: includes/settings.php:712
 msgid "%s folder data deleted."
 msgstr "Usunięto dane folderów %s."
 
 #. translators: 1: number of folders, 2: number of files, 3: number of folders already imported.
-#: includes/settings.php:447
+#: includes/settings.php:503
 msgid "Folders: %1$d · Files in them: %2$d · Already imported: %3$d"
 msgstr "Folderów: %1$d · Plików w nich: %2$d · Już zaimportowanych: %3$d"
 
 #. translators: 1: plugin name, 2: folders created, 3: folders reused, 4: files filed.
-#: includes/settings.php:606
+#: includes/settings.php:662
 msgid "Imported from %1$s. Folders created: %2$d · Existing folders reused: %3$d · Files filed: %4$d."
 msgstr "Zaimportowano z %1$s. Utworzone foldery: %2$d · Wykorzystane istniejące: %3$d · Przypisane pliki: %4$d."
 
-#: includes/settings.php:47
+#: includes/settings.php:48
 msgid "Show files from subfolders in parent folders"
 msgstr "Pokazuj pliki z podfolderów w folderach nadrzędnych"
 
-#: includes/settings.php:48
+#: includes/settings.php:49
 msgid "Also switchable with the toggle above the folder tree."
 msgstr "Można to też przełączać przełącznikiem nad drzewem folderów."
 
-#: includes/settings.php:52
+#: includes/settings.php:53
 #: build/index.js:17
 msgid "Show subfolders above the files"
 msgstr "Pokazuj podfoldery nad plikami"
 
-#: includes/settings.php:53
+#: includes/settings.php:54
 msgid "Breadcrumb tiles for the folders inside the open folder, with a “New folder” tile."
 msgstr "Kafelki folderów znajdujących się w otwartym folderze, z kafelkiem „Nowy folder”."
 
-#: includes/settings.php:57
+#: includes/settings.php:58
 #: build/index.js:17
 msgid "Open the current folder in the tree"
 msgstr "Otwieraj bieżący folder w drzewie"
 
-#: includes/settings.php:58
+#: includes/settings.php:59
 msgid "Expands the tree to the folder you open from a tile or the breadcrumb."
 msgstr "Rozwija drzewo do folderu otwartego z kafelka lub ścieżki."
 
-#: includes/settings.php:62
+#: includes/settings.php:63
 #: build/index.js:17
 msgid "Remember the last folder separately for each content type"
 msgstr "Zapamiętuj ostatni folder osobno dla każdego typu treści"
 
-#: includes/settings.php:63
+#: includes/settings.php:64
 msgid "For example one folder when adding images to products and another for posts."
 msgstr "Na przykład jeden folder przy dodawaniu zdjęć do produktów, a inny do wpisów."
 
-#: includes/settings.php:316
+#: includes/settings.php:371
 msgid "Defaults for everyone"
 msgstr "Domyślne dla wszystkich"
 
-#: includes/settings.php:317
+#: includes/settings.php:371
 msgid "How the folders behave for users who have not changed it themselves. Everyone can adjust these for their own account from the ⚙ menu above the folder tree."
 msgstr "Jak zachowują się foldery dla użytkowników, którzy nie zmienili tego sami. Każdy może to dostosować dla swojego konta w menu ⚙ nad drzewem folderów."
 
-#: includes/settings.php:325
+#: includes/settings.php:379
 msgid "On"
 msgstr "Włączone"
 
 #: build/index.js:17
 msgid "View options"
 msgstr "Opcje widoku"
+
+#: build/index.js:17
+msgid "Expand all folders"
+msgstr "Rozwiń wszystkie foldery"
+
+#: build/index.js:17
+msgid "Collapse all folders"
+msgstr "Zwiń wszystkie foldery"
+
+#: build/index.js:17
+msgid "Folder tools"
+msgstr "Narzędzia folderów"
+
+#: build/index.js:20
+msgid "Files from subfolders"
+msgstr "Pliki z podfolderów"

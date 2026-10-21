@@ -7,7 +7,6 @@ import {
 	MenuGroup,
 	MenuItem,
 	SearchControl,
-	ToggleControl,
 } from '@wordpress/components';
 import { useEffect, useRef, useState } from '@wordpress/element';
 import { __, _n, sprintf } from '@wordpress/i18n';
@@ -15,6 +14,7 @@ import {
 	check,
 	chevronDown,
 	chevronRight,
+	chevronUpDown,
 	cog,
 	moreVertical,
 	plus,
@@ -37,12 +37,16 @@ import {
 	setExpanded,
 	setNested,
 	setPref,
+	expandAll,
+	collapseAll,
 } from '../store';
 import { startFolder } from '../drag';
 import {
 	NameInput,
 	allFilesIcon,
+	collapseAllIcon,
 	folderIcon,
+	nestedIcon,
 	unfiledIcon,
 	useDropTarget,
 	useStore,
@@ -558,38 +562,68 @@ export default function Sidebar( { view } ) {
 				<h2 className="imd-panel__title">
 					{ __( 'Folders', 'isudev-media-directory' ) }
 				</h2>
-				{ can.manage && (
-					<Button
-						icon={ plus }
-						size="compact"
-						label={
-							typeof current === 'number'
-								? sprintf(
-										/* translators: %s: folder name. */
-										__(
-											'New folder in “%s”',
-											'isudev-media-directory'
-										),
-										getFolder( current )?.name
-								  )
-								: __( 'New folder', 'isudev-media-directory' )
-						}
-						onClick={ newFolder }
-					/>
-				) }
-				<ViewOptions prefs={ prefs } />
-			</div>
-
-			<div className="imd-panel__nested">
-				<ToggleControl
-					__nextHasNoMarginBottom
-					label={ __(
-						'Show files from subfolders',
+				<div
+					className="imd-panel__toolbar"
+					role="toolbar"
+					aria-label={ __(
+						'Folder tools',
 						'isudev-media-directory'
 					) }
-					checked={ nested }
-					onChange={ setNested }
-				/>
+				>
+					<Button
+						icon={ chevronUpDown }
+						size="compact"
+						label={ __(
+							'Expand all folders',
+							'isudev-media-directory'
+						) }
+						onClick={ expandAll }
+					/>
+					<Button
+						icon={ collapseAllIcon }
+						size="compact"
+						label={ __(
+							'Collapse all folders',
+							'isudev-media-directory'
+						) }
+						onClick={ collapseAll }
+					/>
+					<Button
+						icon={ nestedIcon }
+						size="compact"
+						isPressed={ nested }
+						aria-pressed={ nested }
+						label={ __(
+							'Show files from subfolders',
+							'isudev-media-directory'
+						) }
+						onClick={ () => setNested( ! nested ) }
+					/>
+					<span className="imd-panel__divider" aria-hidden="true" />
+					{ can.manage && (
+						<Button
+							icon={ plus }
+							size="compact"
+							label={
+								typeof current === 'number'
+									? sprintf(
+											/* translators: %s: folder name. */
+											__(
+												'New folder in “%s”',
+												'isudev-media-directory'
+											),
+											getFolder( current )?.name
+									  )
+									: __(
+											'New folder',
+											'isudev-media-directory'
+									  )
+							}
+							onClick={ newFolder }
+						/>
+					) }
+					<ViewOptions prefs={ prefs } />
+				</div>
 			</div>
 
 			{ tree.folders.length > 6 && (

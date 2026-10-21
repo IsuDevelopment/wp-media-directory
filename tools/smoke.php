@@ -111,6 +111,33 @@ try {
 	$imd_is( 'query A flat', $imd_query( $imd_files, $imd_a, false ), array( $imd_f2 ) );
 	$imd_is( 'query unassigned', $imd_query( $imd_files, Folders\UNASSIGNED, false ), array( $imd_f3 ) );
 
+	// Search runs in SQL over the whole library, narrowed to the folder view.
+	$imd_title = get_the_title( $imd_f1 );
+	$imd_found = new WP_Query(
+		array(
+			'post_type'      => 'attachment',
+			'post_status'    => 'inherit',
+			's'              => $imd_title,
+			'fields'         => 'ids',
+			'posts_per_page' => -1,
+			'imd_folder'     => $imd_a,
+			'imd_nested'     => true,
+		)
+	);
+	$imd_is( 'search inside a folder finds a file from its subfolder', in_array( $imd_f1, array_map( 'intval', $imd_found->posts ), true ), true );
+	$imd_found = new WP_Query(
+		array(
+			'post_type'      => 'attachment',
+			'post_status'    => 'inherit',
+			's'              => $imd_title,
+			'fields'         => 'ids',
+			'posts_per_page' => -1,
+			'imd_folder'     => $imd_c,
+			'imd_nested'     => true,
+		)
+	);
+	$imd_is( 'search inside another folder does not find it', in_array( $imd_f1, array_map( 'intval', $imd_found->posts ), true ), false );
+
 	$imd_moved = $imd_rest(
 		'POST',
 		'/items',

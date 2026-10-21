@@ -31,6 +31,7 @@ function boot(): void {
 	add_action( 'admin_init', __NAMESPACE__ . '\\register' );
 	add_action( 'admin_post_isudev_media_directory_import', __NAMESPACE__ . '\\handle_import' );
 	add_action( 'admin_post_isudev_media_directory_cleanup', __NAMESPACE__ . '\\handle_cleanup' );
+	add_action( 'admin_enqueue_scripts', __NAMESPACE__ . '\\enqueue_styles' );
 }
 
 /**
@@ -259,6 +260,60 @@ function flash( string $type, string $message ): void {
 }
 
 /**
+ * Start a white dashboard panel (core `.postbox`). Every tab is built from
+ * these, so all tabs look the same.
+ *
+ * @param string $title Panel title.
+ * @param string $intro Optional intro paragraph.
+ * @return void
+ */
+function panel_open( string $title, string $intro = '' ): void {
+	?>
+	<div class="postbox imd-settings-panel">
+		<div class="postbox-header"><h2 class="hndle"><?php echo esc_html( $title ); ?></h2></div>
+		<div class="inside">
+			<?php if ( '' !== $intro ) : ?>
+				<p><?php echo esc_html( $intro ); ?></p>
+			<?php endif; ?>
+	<?php
+}
+
+/**
+ * Close a panel opened with panel_open().
+ *
+ * @return void
+ */
+function panel_close(): void {
+	echo '</div></div>';
+}
+
+/**
+ * Small styles for the settings page: panels are core `.postbox`, this only
+ * removes the drag cursor (no postbox.js here) and doubled table borders.
+ *
+ * @param string $hook_suffix Admin page.
+ * @return void
+ */
+function enqueue_styles( string $hook_suffix ): void {
+	if ( 'media_page_' . PAGE !== $hook_suffix ) {
+		return;
+	}
+
+	wp_register_style( 'isudev-media-directory-settings', false, array(), \IsuDevMediaDirectory\VERSION );
+	wp_enqueue_style( 'isudev-media-directory-settings' );
+	wp_add_inline_style(
+		'isudev-media-directory-settings',
+		'.imd-settings-panel{margin-top:20px}'
+		. '.imd-settings-panel .postbox-header .hndle{cursor:default;padding:8px 12px;font-size:14px}'
+		. '.imd-settings-panel .inside{margin:0;padding:4px 12px 12px}'
+		. '.imd-settings-panel .form-table{margin-top:0}'
+		. '.imd-settings-panel .widefat{border:0;box-shadow:none}'
+		. '.imd-settings-panel .widefat th .description{display:block;font-weight:400}'
+		. '.imd-settings-panel hr{margin:16px -12px;border:0;border-top:1px solid #f0f0f1}'
+	);
+}
+
+/**
  * Render the page.
  *
  * @return void
@@ -313,8 +368,7 @@ function render_general(): void {
 	?>
 	<form method="post" action="options.php">
 		<?php settings_fields( PAGE ); ?>
-		<h2><?php esc_html_e( 'Defaults for everyone', 'isudev-media-directory' ); ?></h2>
-		<p><?php esc_html_e( 'How the folders behave for users who have not changed it themselves. Everyone can adjust these for their own account from the ⚙ menu above the folder tree.', 'isudev-media-directory' ); ?></p>
+		<?php panel_open( __( 'Defaults for everyone', 'isudev-media-directory' ), __( 'How the folders behave for users who have not changed it themselves. Everyone can adjust these for their own account from the ⚙ menu above the folder tree.', 'isudev-media-directory' ) ); ?>
 		<table class="form-table" role="presentation">
 			<?php foreach ( preference_defs() as $key => $def ) : ?>
 				<tr>
@@ -330,6 +384,7 @@ function render_general(): void {
 			<?php endforeach; ?>
 		</table>
 		<?php submit_button(); ?>
+		<?php panel_close(); ?>
 	</form>
 	<?php
 }
@@ -344,10 +399,9 @@ function render_permissions(): void {
 	$roles   = Permissions\roles();
 	$actions = Permissions\actions();
 	?>
-	<p><?php esc_html_e( 'Choose what each role can do with folders. Only roles that can upload files are listed.', 'isudev-media-directory' ); ?></p>
-
 	<form method="post" action="options.php">
 		<?php settings_fields( PAGE . '-permissions' ); ?>
+		<?php panel_open( __( 'Permissions', 'isudev-media-directory' ), __( 'Choose what each role can do with folders. Only roles that can upload files are listed.', 'isudev-media-directory' ) ); ?>
 		<table class="widefat striped imd-permissions" role="presentation">
 			<thead>
 				<tr>
@@ -355,7 +409,7 @@ function render_permissions(): void {
 					<?php foreach ( $actions as $action ) : ?>
 						<th scope="col">
 							<?php echo esc_html( $action['label'] ); ?>
-							<span class="description" style="display:block;font-weight:400"><?php echo esc_html( $action['help'] ); ?></span>
+							<span class="description"><?php echo esc_html( $action['help'] ); ?></span>
 						</th>
 					<?php endforeach; ?>
 				</tr>
@@ -390,6 +444,7 @@ function render_permissions(): void {
 			<?php esc_html_e( 'Administrators can always do everything. Organizing, creating or deleting includes seeing folders. Empty folders can be deleted by anyone who can create them, so a new folder can be undone. Permanently deleting files still follows WordPress’ own rules.', 'isudev-media-directory' ); ?>
 		</p>
 		<?php submit_button(); ?>
+		<?php panel_close(); ?>
 	</form>
 	<?php
 }
@@ -413,16 +468,18 @@ function render_import(): void {
 		}
 	}
 	?>
-	<p><?php esc_html_e( 'Copy folders and which file sits where from another media folder plugin. Its own data is not changed, and an import can be repeated: it only adds what is missing.', 'isudev-media-directory' ); ?></p>
+	<?php panel_open( __( 'Import', 'isudev-media-directory' ), __( 'Copy folders and which file sits where from another media folder plugin. Its own data is not changed, and an import can be repeated: it only adds what is missing.', 'isudev-media-directory' ) ); ?>
+	<?php if ( $empty ) : ?>
+		<p>
+			<strong><?php esc_html_e( 'Nothing to import from', 'isudev-media-directory' ); ?>:</strong>
+			<?php echo esc_html( implode( ', ', $empty ) ); ?>
+		</p>
+	<?php endif; ?>
+	<?php panel_close(); ?>
 
 	<?php foreach ( $with_data as list( $source, $preview ) ) : ?>
 		<?php render_source( $source, $preview ); ?>
 	<?php endforeach; ?>
-
-	<?php if ( $empty ) : ?>
-		<h2><?php esc_html_e( 'Nothing to import from', 'isudev-media-directory' ); ?></h2>
-		<p><?php echo esc_html( implode( ', ', $empty ) ); ?></p>
-	<?php endif; ?>
 	<?php
 }
 
@@ -437,8 +494,7 @@ function render_source( Import\Source $source, array $preview ): void {
 	$slug   = $source->slug();
 	$action = admin_url( 'admin-post.php' );
 	?>
-	<div class="card" style="max-width:none">
-		<h2 class="title"><?php echo esc_html( $source->name() ); ?></h2>
+	<?php panel_open( $source->name() ); ?>
 		<p>
 			<?php
 			echo esc_html(
@@ -559,7 +615,7 @@ function render_source( Import\Source $source, array $preview ): void {
 				?>
 			<?php endif; ?>
 		</form>
-	</div>
+	<?php panel_close(); ?>
 	<?php
 }
 

@@ -1,5 +1,3 @@
-# Copyright (C) 2026 IsuDev
-# This file is distributed under the GPL-2.0-or-later.
 msgid ""
 msgstr ""
 "Project-Id-Version: IsuDev Media Directory 0.1.0\n"
@@ -11,9 +9,9 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "POT-Creation-Date: 2026-10-21T05:08:14+00:00\n"
 "PO-Revision-Date: 2026-10-21 12:00+0200\n"
+"Language: nb_NO\n"
 "X-Generator: WP-CLI 2.11.0\n"
 "X-Domain: isudev-media-directory\n"
-"Language: nb_NO\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #. Plugin Name of the plugin
@@ -56,7 +54,7 @@ msgid "%s is active next to Media Directory, so the Media Library shows two fold
 msgstr "%s er aktiv ved siden av Media Directory, så mediebiblioteket viser to mappepaneler. Importer mappene, og deaktiver den deretter."
 
 #: includes/import.php:378
-#: includes/settings.php:509
+#: includes/settings.php:565
 msgid "Import folders"
 msgstr "Importer mapper"
 
@@ -98,7 +96,7 @@ msgid "Delete folders that hold files or subfolders"
 msgstr "Slette mapper som inneholder filer eller undermapper"
 
 #: includes/rest.php:78
-#: includes/settings.php:574
+#: includes/settings.php:630
 msgid "Sorry, you are not allowed to do that."
 msgstr "Beklager, du har ikke tillatelse til å gjøre dette."
 
@@ -134,177 +132,179 @@ msgstr "Du har ikke tillatelse til å slette noen av disse filene."
 msgid "No files you can edit were selected."
 msgstr "Ingen filer du kan redigere ble valgt."
 
-#: includes/settings.php:47
+#: includes/settings.php:48
 msgid "Show files from subfolders in parent folders"
 msgstr "Vis filer fra undermapper i overordnede mapper"
 
-#: includes/settings.php:48
+#: includes/settings.php:49
 msgid "Also switchable with the toggle above the folder tree."
 msgstr "Kan også slås av og på med bryteren over mappetreet."
 
-#: includes/settings.php:52
+#: includes/settings.php:53
 #: build/index.js:17
 msgid "Show subfolders above the files"
 msgstr "Vis undermapper over filene"
 
-#: includes/settings.php:53
+#: includes/settings.php:54
 msgid "Breadcrumb tiles for the folders inside the open folder, with a “New folder” tile."
 msgstr "Fliser for mappene i den åpne mappen, med en «Ny mappe»-flis."
 
-#: includes/settings.php:57
+#: includes/settings.php:58
 #: build/index.js:17
 msgid "Open the current folder in the tree"
 msgstr "Åpne gjeldende mappe i treet"
 
-#: includes/settings.php:58
+#: includes/settings.php:59
 msgid "Expands the tree to the folder you open from a tile or the breadcrumb."
 msgstr "Utvider treet til mappen du åpner fra en flis eller mappestien."
 
-#: includes/settings.php:62
+#: includes/settings.php:63
 #: build/index.js:17
 msgid "Remember the last folder separately for each content type"
 msgstr "Husk siste mappe separat for hver innholdstype"
 
-#: includes/settings.php:63
+#: includes/settings.php:64
 msgid "For example one folder when adding images to products and another for posts."
 msgstr "For eksempel én mappe når du legger til bilder i produkter, og en annen for innlegg."
 
-#: includes/settings.php:163
 #: includes/settings.php:164
-#: includes/settings.php:281
+#: includes/settings.php:165
+#: includes/settings.php:336
 #: build/index.js:18
 msgid "Folder settings"
 msgstr "Mappeinnstillinger"
 
-#: includes/settings.php:275
+#: includes/settings.php:330
 msgid "General"
 msgstr "Generelt"
 
-#: includes/settings.php:276
+#: includes/settings.php:331
+#: includes/settings.php:404
 msgid "Permissions"
 msgstr "Tillatelser"
 
-#: includes/settings.php:277
+#: includes/settings.php:332
+#: includes/settings.php:471
 msgid "Import"
 msgstr "Import"
 
-#: includes/settings.php:316
+#: includes/settings.php:371
 msgid "Defaults for everyone"
 msgstr "Standard for alle"
 
-#: includes/settings.php:317
+#: includes/settings.php:371
 msgid "How the folders behave for users who have not changed it themselves. Everyone can adjust these for their own account from the ⚙ menu above the folder tree."
 msgstr "Slik oppfører mappene seg for brukere som ikke har endret det selv. Alle kan justere dette for sin egen konto fra ⚙-menyen over mappetreet."
 
-#: includes/settings.php:325
+#: includes/settings.php:379
 msgid "On"
 msgstr "På"
 
-#: includes/settings.php:347
+#: includes/settings.php:404
 msgid "Choose what each role can do with folders. Only roles that can upload files are listed."
 msgstr "Velg hva hver rolle kan gjøre med mapper. Bare roller som kan laste opp filer, vises."
 
-#: includes/settings.php:354
+#: includes/settings.php:408
 msgid "Role"
 msgstr "Rolle"
 
-#: includes/settings.php:390
+#: includes/settings.php:444
 msgid "Administrators can always do everything. Organizing, creating or deleting includes seeing folders. Empty folders can be deleted by anyone who can create them, so a new folder can be undone. Permanently deleting files still follows WordPress’ own rules."
 msgstr "Administratorer kan alltid gjøre alt. Organisering, oppretting og sletting inkluderer å se mapper. Tomme mapper kan slettes av alle som kan opprette mapper, slik at en ny mappe kan angres. Permanent sletting av filer følger fortsatt WordPress sine egne regler."
 
-#: includes/settings.php:416
+#: includes/settings.php:471
 msgid "Copy folders and which file sits where from another media folder plugin. Its own data is not changed, and an import can be repeated: it only adds what is missing."
 msgstr "Kopier mapper og hvilken fil som ligger hvor fra en annen mappeutvidelse for media. Dataene der endres ikke, og en import kan gjentas: den legger bare til det som mangler."
 
-#: includes/settings.php:423
+#: includes/settings.php:474
 msgid "Nothing to import from"
 msgstr "Ingenting å importere fra"
 
 #. translators: 1: number of folders, 2: number of files, 3: number of folders already imported.
-#: includes/settings.php:447
+#: includes/settings.php:503
 msgid "Folders: %1$d · Files in them: %2$d · Already imported: %3$d"
 msgstr "Mapper: %1$d · Filer i dem: %2$d · Allerede importert: %3$d"
 
-#: includes/settings.php:455
+#: includes/settings.php:511
 msgid "The plugin is still active."
 msgstr "Utvidelsen er fortsatt aktiv."
 
-#: includes/settings.php:464
+#: includes/settings.php:520
 msgid "Where to put the folders"
 msgstr "Hvor mappene skal plasseres"
 
-#: includes/settings.php:468
+#: includes/settings.php:524
 msgid "Merge with my folders"
 msgstr "Slå sammen med mine mapper"
 
 #. translators: %d: number of folders.
-#: includes/settings.php:476
+#: includes/settings.php:532
 msgid "%d top-level folder has the same name as one of yours and will be combined with it."
 msgid_plural "%d top-level folders have the same name as yours and will be combined with them."
 msgstr[0] "%d mappe på øverste nivå har samme navn som en av dine og blir slått sammen med den."
 msgstr[1] "%d mapper på øverste nivå har samme navn som dine og blir slått sammen med dem."
 
-#: includes/settings.php:481
+#: includes/settings.php:537
 msgid "Folders with the same name in the same place are combined."
 msgstr "Mapper med samme navn på samme sted slås sammen."
 
 #. translators: %s: plugin name.
-#: includes/settings.php:493
+#: includes/settings.php:549
 msgid "Put everything in a new folder “%s”"
 msgstr "Legg alt i en ny mappe «%s»"
 
-#: includes/settings.php:505
+#: includes/settings.php:561
 msgid "Also copy HappyFiles folder access per role to Permissions"
 msgstr "Kopier også HappyFiles-mappetilgang per rolle til Tillatelser"
 
 #. translators: %s: plugin name.
-#: includes/settings.php:523
+#: includes/settings.php:579
 msgid "After importing you can delete %s’s folder data from the database. Files stay in the library; only that plugin’s folders and assignments are removed. This cannot be undone."
 msgstr "Etter importen kan du slette mappedataene til %s fra databasen. Filene blir værende i biblioteket; bare mappene og tilordningene til den utvidelsen fjernes. Dette kan ikke angres."
 
 #. translators: %s: plugin name.
-#: includes/settings.php:535
+#: includes/settings.php:591
 msgid "Deactivate %s first."
 msgstr "Deaktiver %s først."
 
-#: includes/settings.php:545
+#: includes/settings.php:601
 msgid "I understand this cannot be undone"
 msgstr "Jeg forstår at dette ikke kan angres"
 
 #. translators: %s: plugin name.
-#: includes/settings.php:552
+#: includes/settings.php:608
 msgid "Delete %s folder data"
 msgstr "Slett mappedataene til %s"
 
-#: includes/settings.php:584
+#: includes/settings.php:640
 msgid "Unknown import source."
 msgstr "Ukjent importkilde."
 
 #. translators: 1: plugin name, 2: folders created, 3: folders reused, 4: files filed.
-#: includes/settings.php:606
+#: includes/settings.php:662
 msgid "Imported from %1$s. Folders created: %2$d · Existing folders reused: %3$d · Files filed: %4$d."
 msgstr "Importert fra %1$s. Opprettede mapper: %2$d · Gjenbrukte mapper: %3$d · Filer plassert: %4$d."
 
 #. translators: %d: number of roles.
-#: includes/settings.php:617
+#: includes/settings.php:673
 msgid "Folder access copied for %d role."
 msgid_plural "Folder access copied for %d roles."
 msgstr[0] "Mappetilgang kopiert for %d rolle."
 msgstr[1] "Mappetilgang kopiert for %d roller."
 
 #. translators: %d: number of users.
-#: includes/settings.php:624
+#: includes/settings.php:680
 msgid "%d user had personal HappyFiles access; personal settings are not supported, so they now follow their role."
 msgid_plural "%d users had personal HappyFiles access; personal settings are not supported, so they now follow their role."
 msgstr[0] "%d bruker hadde personlig HappyFiles-tilgang; personlige innstillinger støttes ikke, så nå gjelder rollen."
 msgstr[1] "%d brukere hadde personlig HappyFiles-tilgang; personlige innstillinger støttes ikke, så nå gjelder rollene deres."
 
-#: includes/settings.php:645
+#: includes/settings.php:701
 msgid "Nothing was deleted: please tick the confirmation box."
 msgstr "Ingenting ble slettet: kryss av i bekreftelsesboksen."
 
 #. translators: %s: plugin name.
-#: includes/settings.php:656
+#: includes/settings.php:712
 msgid "%s folder data deleted."
 msgstr "Mappedataene til %s er slettet."
 
@@ -471,7 +471,7 @@ msgstr "Ny mappe i «%s»"
 msgid "New folder"
 msgstr "Ny mappe"
 
-#: build/index.js:18
+#: build/index.js:17
 msgid "Show files from subfolders"
 msgstr "Vis filer fra undermapper"
 
@@ -519,6 +519,7 @@ msgstr[1] "%d filer til ligger i undermapper."
 msgid "Show them here"
 msgstr "Vis dem her"
 
+#: build/index.js:20
 #: build/index.js:21
 msgid "Subfolders"
 msgstr "Undermapper"
@@ -587,3 +588,19 @@ msgstr[1] "Slett mappen og %d filer"
 #: build/index.js:27
 msgid "Delete folder"
 msgstr "Slett mappe"
+
+#: build/index.js:17
+msgid "Expand all folders"
+msgstr "Utvid alle mapper"
+
+#: build/index.js:17
+msgid "Collapse all folders"
+msgstr "Skjul alle mapper"
+
+#: build/index.js:17
+msgid "Folder tools"
+msgstr "Mappeverktøy"
+
+#: build/index.js:20
+msgid "Files from subfolders"
+msgstr "Filer fra undermapper"

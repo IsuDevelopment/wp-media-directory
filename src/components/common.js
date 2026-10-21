@@ -32,6 +32,20 @@ export const allFilesIcon = (
 	</SVG>
 );
 
+// Folder with a folder inside: "show files from subfolders".
+export const nestedIcon = (
+	<SVG xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+		<Path d="M3.5 4h4.2l1.4 1.75H15a1 1 0 0 1 1 1V8h-1.5v-.75H8.4L7 5.5H4.5v9H6V16H3.5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Zm5 5h4.2l1.4 1.75H20a1 1 0 0 1 1 1V19a1 1 0 0 1-1 1H8.5a1 1 0 0 1-1-1v-9a1 1 0 0 1 1-1Zm.5 1.5v8h10.5v-6.25h-6.1L11.9 10.5H9Z" />
+	</SVG>
+);
+
+// Two chevrons pointing inwards: collapse every folder.
+export const collapseAllIcon = (
+	<SVG xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+		<Path d="m8.1 4 3.9 3.9L15.9 4l1.1 1.1-5 5-5-5L8.1 4Zm7.8 16L12 16.1 8.1 20 7 18.9l5-5 5 5-1.1 1.1Z" />
+	</SVG>
+);
+
 export const unfiledIcon = (
 	<SVG xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
 		<Path d="M4.5 5.5h4.4l1.6 2h9a.5.5 0 0 1 .5.5v10a.5.5 0 0 1-.5.5h-15A.5.5 0 0 1 4 18V6a.5.5 0 0 1 .5-.5ZM3 6v12a1.5 1.5 0 0 0 1.5 1.5h15A1.5 1.5 0 0 0 21 18V8a1.5 1.5 0 0 0-1.5-1.5h-8.3l-1.6-2H4.5A1.5 1.5 0 0 0 3 6Zm6.2 4.6 1.8 1.8-1.8 1.8 1 1 1.8-1.8 1.8 1.8 1-1-1.8-1.8 1.8-1.8-1-1-1.8 1.8-1.8-1.8-1 1Z" />

@@ -268,6 +268,23 @@ export function setExpanded( id, expanded ) {
 }
 
 /**
+ * Open every folder that has subfolders.
+ */
+export function expandAll() {
+	const next = state.tree.folders
+		.filter( ( folder ) => getChildren( folder.id ).length )
+		.map( ( folder ) => folder.id );
+
+	writeStorage( EXPANDED_KEY, next );
+	setState( { expanded: next } );
+}
+
+export function collapseAll() {
+	writeStorage( EXPANDED_KEY, [] );
+	setState( { expanded: [] } );
+}
+
+/**
  * Open every ancestor of a folder so it can be seen in the tree.
  *
  * @param {number} id Folder ID.

@@ -50,6 +50,23 @@ snap(); g.imdView.setFolder(5); await new Promise(r => setTimeout(r, 1200)); on 
 Pass: one transition (old count → new count), never a `0` frame in between,
 panel top constant, breadcrumb changes in the same entry as the files.
 
+### List view switches folders without reloading
+
+On `upload.php?mode=list`, set a marker, switch folders, check it survived and
+the rows changed:
+
+```js
+window.__imdMarker = 1;
+const before = document.querySelectorAll('#the-list tr').length;
+document.querySelector('.imd-list-layout .imd-row__main').click(); // first folder
+await new Promise(r => setTimeout(r, 1500));
+({ sameDocument: window.__imdMarker === 1, before,
+   after: document.querySelectorAll('#the-list tr').length, url: location.href });
+```
+
+Pass: `sameDocument: true`, `url` carries `imd_folder`, row count matches the
+folder, "select all" in the header still toggles the rows.
+
 ### Drag files onto a folder, then undo
 
 ```js

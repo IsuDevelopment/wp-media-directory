@@ -25,32 +25,49 @@ $theme-tint: color-mix(in srgb, var(--wp-admin-theme-color, #3858e9) 8%, transpa
 	}
 }
 
+// Title on its own line so its length (it is translated) never squeezes the tools.
 .imd-panel__header {
+	padding: 12px 8px 8px 16px;
+	border-bottom: 1px solid $border;
+}
+
+.imd-panel__toolbar {
 	display: flex;
+	flex-wrap: wrap;
 	align-items: center;
-	justify-content: space-between;
-	gap: 8px;
-	padding: 12px 12px 8px 16px;
+	margin: 6px 0 0 -6px;
+}
+
+// Compact toolbar like the editor's: 26px buttons, 18px icons.
+.imd-panel__toolbar .components-button.has-icon {
+	flex: none;
+	min-width: 26px;
+	width: 26px;
+	height: 26px;
+	padding: 0;
+	justify-content: center;
+
+	svg {
+		width: 18px;
+		height: 18px;
+	}
+}
+
+.imd-panel__divider {
+	flex: none;
+	width: 1px;
+	height: 18px;
+	margin: 0 3px;
+	background: $border-strong;
 }
 
 .imd-panel__title {
-	flex: 1;
 	margin: 0;
 	font-size: 11px;
 	font-weight: 500;
 	line-height: 1.4;
 	text-transform: uppercase;
 	color: $text;
-}
-
-.imd-panel__nested {
-	padding: 4px 16px 12px;
-	border-bottom: 1px solid $border;
-
-	.components-toggle-control .components-toggle-control__label,
-	.components-toggle-control label {
-		font-size: 13px;
-	}
 }
 
 .imd-panel__search {
@@ -411,8 +428,18 @@ $theme-tint: color-mix(in srgb, var(--wp-admin-theme-color, #3858e9) 8%, transpa
 		background: #fff;
 	}
 
+	// One 12px rhythm: breadcrumb → tiles → core's filter bar (`.wp-filter`
+	// brings its own 12px top margin), so the header adds nothing below.
 	.imd-content-header {
-		padding: 0 0 8px;
+		padding: 0;
+
+		> :last-child {
+			margin-bottom: 0;
+		}
+	}
+
+	.imd-list-main > form > .wp-filter:first-child {
+		margin-top: 12px;
 	}
 }
 
@@ -725,4 +752,81 @@ body.imd-is-dragging .uploader-editor {
 	.imd-tile__name {
 		font-weight: 400;
 	}
+}
+
+// List view: rows stay while the next folder loads (src/list.js); dim them only if it is slow.
+.imd-list-main #the-list {
+	transition: opacity 0.15s;
+}
+
+.imd-list-main.imd-is-loading #the-list {
+	opacity: 0.55;
+	transition-delay: 0.2s;
+}
+
+/* -------------------------------------------------------------------------
+ * Experiment (grid only): folder switches next to the breadcrumb.
+ * ---------------------------------------------------------------------- */
+
+.imd-content-header__bar {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px 16px;
+	margin-bottom: 12px;
+
+	.imd-crumbs {
+		margin-bottom: 0;
+	}
+}
+
+.imd-header-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+}
+
+.imd-header-action.components-button {
+	height: 32px;
+	padding: 0 12px 0 8px;
+	border: 1px solid $border-strong;
+	border-radius: 2px;
+	background: #fff;
+	color: $text;
+
+	svg {
+		width: 20px;
+		height: 20px;
+	}
+
+	&:hover:not(:disabled) {
+		border-color: $theme;
+		color: $theme;
+	}
+
+	// Every toggle here shares one pressed look.
+	&.is-pressed,
+	&.is-pressed:hover:not(:disabled),
+	&.is-pressed:focus:not(:disabled) {
+		border-color: $theme;
+		background: $theme-tint;
+		color: $theme;
+
+		.imd-header-action__count {
+			color: inherit;
+		}
+	}
+}
+
+.imd-header-action__count {
+	margin-left: 6px;
+	color: $muted;
+}
+
+.imd-header-action.is-editing {
+	display: flex;
+	align-items: center;
+	height: 32px;
+	padding: 0 4px;
 }

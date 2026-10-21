@@ -34,6 +34,19 @@ function boot(): void {
 	add_filter( 'wp_prepare_attachment_for_js', __NAMESPACE__ . '\\attachment_json', 10, 2 );
 	add_action( 'add_attachment', __NAMESPACE__ . '\\file_upload' );
 	add_action( 'delete_attachment', __NAMESPACE__ . '\\forget_attachment' );
+	add_filter( 'media_library_infinite_scrolling', __NAMESPACE__ . '\\infinite_scrolling' );
+}
+
+/**
+ * Infinite scrolling in the grid and modals on WordPress 7.0, where core still
+ * defaults to a "Load more" button. From 7.1 core defaults to infinite
+ * scrolling with a per-user opt-out in the profile, so we leave it alone.
+ *
+ * @param bool $enabled Core's value.
+ * @return bool
+ */
+function infinite_scrolling( $enabled ): bool {
+	return version_compare( get_bloginfo( 'version' ), '7.1-alpha', '<' ) ? true : (bool) $enabled;
 }
 
 /**

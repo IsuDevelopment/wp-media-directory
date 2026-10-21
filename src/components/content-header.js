@@ -28,8 +28,15 @@ import {
 	removeFolder,
 	renameFolder,
 	setNested,
+	setPref,
 } from '../store';
-import { NameInput, folderIcon, useDropTarget, useStore } from './common';
+import {
+	NameInput,
+	folderIcon,
+	nestedIcon,
+	useDropTarget,
+	useStore,
+} from './common';
 
 function Crumb( { folder, label, onSelect, isCurrent } ) {
 	const [ isOver, dropProps ] = useDropTarget( {
@@ -251,6 +258,74 @@ function NewFolderTile( { parent } ) {
 	);
 }
 
+/**
+ * Experimental (grid only): the most used folder switches as visible buttons
+ * at the right of the breadcrumb, instead of only in the ⚙ menu.
+ *
+ * @param {Object}  props
+ * @param {Object}  props.folder Open folder.
+ * @param {boolean} props.nested Files from subfolders shown.
+ * @param {boolean} props.tiles  Subfolder tiles shown.
+ */
+function HeaderActions( { folder, nested, tiles } ) {
+	const [ creating, setCreating ] = useState( false );
+	const subfolders = getChildren( folder.id ).length;
+
+	return (
+		<div className="imd-header-actions">
+			{ subfolders > 0 && (
+				<Button
+					className="imd-header-action"
+					icon={ folderIcon }
+					isPressed={ tiles }
+					aria-pressed={ tiles }
+					onClick={ () => setPref( 'tiles', ! tiles ) }
+				>
+					{ __( 'Subfolders', 'isudev-media-directory' ) }
+					<span className="imd-header-action__count">
+						{ subfolders }
+					</span>
+				</Button>
+			) }
+			<Button
+				className="imd-header-action"
+				icon={ nestedIcon }
+				isPressed={ nested }
+				aria-pressed={ nested }
+				onClick={ () => setNested( ! nested ) }
+			>
+				{ __( 'Files from subfolders', 'isudev-media-directory' ) }
+			</Button>
+			{ can.manage &&
+				( creating ? (
+					<div className="imd-header-action is-editing">
+						<NameInput
+							label={ __(
+								'New folder name',
+								'isudev-media-directory'
+							) }
+							onSubmit={ ( name ) => {
+								setCreating( false );
+								createFolder( name, folder.id ).catch(
+									() => {}
+								);
+							} }
+							onCancel={ () => setCreating( false ) }
+						/>
+					</div>
+				) : (
+					<Button
+						className="imd-header-action"
+						icon={ plus }
+						onClick={ () => setCreating( true ) }
+					>
+						{ __( 'New folder', 'isudev-media-directory' ) }
+					</Button>
+				) ) }
+		</div>
+	);
+}
+
 export default function ContentHeader( { view } ) {
 	// Re-render on tree changes; folder and nested follow what the grid shows.
 	const { prefs } = useStore();
@@ -263,6 +338,8 @@ export default function ContentHeader( { view } ) {
 	const showTiles = !! folder && prefs.tiles;
 	const tiles = showTiles ? getChildren( folder.id ) : [];
 	const hiddenFiles = folder && ! nested ? folder.total - folder.count : 0;
+	// Experiment: header buttons in the library grid only (see HeaderActions).
+	const withActions = view.kind === 'grid' && !! folder;
 
 	if ( current === ALL ) {
 		return null;
@@ -270,36 +347,25 @@ export default function ContentHeader( { view } ) {
 
 	return (
 		<div className="imd-content-header">
-			{ current !== ALL && (
-				<nav
-					className="imd-crumbs"
-					aria-label={ __( 'Folder path', 'isudev-media-directory' ) }
-				>
-					<Crumb
-						folder={ ALL }
-						label={ __( 'All files', 'isudev-media-directory' ) }
-						onSelect={ view.setFolder }
-					/>
-					{ current === UNASSIGNED && (
-						<>
-							<span
-								className="imd-crumbs__sep"
-								aria-hidden="true"
-							>
-								/
-							</span>
-							<Crumb
-								isCurrent
-								label={ __(
-									'Not in a folder',
-									'isudev-media-directory'
-								) }
-							/>
-						</>
-					) }
-					{ folder &&
-						getPath( folder.id ).map( ( item ) => (
-							<span key={ item.id } className="imd-crumbs__item">
+			<div className="imd-content-header__bar">
+				{ current !== ALL && (
+					<nav
+						className="imd-crumbs"
+						aria-label={ __(
+							'Folder path',
+							'isudev-media-directory'
+						) }
+					>
+						<Crumb
+							folder={ ALL }
+							label={ __(
+								'All files',
+								'isudev-media-directory'
+							) }
+							onSelect={ view.setFolder }
+						/>
+						{ current === UNASSIGNED && (
+							<>
 								<span
 									className="imd-crumbs__sep"
 									aria-hidden="true"
@@ -307,15 +373,44 @@ export default function ContentHeader( { view } ) {
 									/
 								</span>
 								<Crumb
-									folder={ item.id }
-									label={ item.name }
-									isCurrent={ item.id === folder.id }
-									onSelect={ view.setFolder }
+									isCurrent
+									label={ __(
+										'Not in a folder',
+										'isudev-media-directory'
+									) }
 								/>
-							</span>
-						) ) }
-				</nav>
-			) }
+							</>
+						) }
+						{ folder &&
+							getPath( folder.id ).map( ( item ) => (
+								<span
+									key={ item.id }
+									className="imd-crumbs__item"
+								>
+									<span
+										className="imd-crumbs__sep"
+										aria-hidden="true"
+									>
+										/
+									</span>
+									<Crumb
+										folder={ item.id }
+										label={ item.name }
+										isCurrent={ item.id === folder.id }
+										onSelect={ view.setFolder }
+									/>
+								</span>
+							) ) }
+					</nav>
+				) }
+				{ withActions && (
+					<HeaderActions
+						folder={ folder }
+						nested={ nested }
+						tiles={ prefs.tiles }
+					/>
+				) }
+			</div>
 
 			{ hiddenFiles > 0 && (
 				<div className="imd-hidden-files">
@@ -337,22 +432,28 @@ export default function ContentHeader( { view } ) {
 				</div>
 			) }
 
-			{ showTiles && ( tiles.length > 0 || can.manage ) && (
-				<ul
-					className="imd-tiles"
-					aria-label={ __( 'Subfolders', 'isudev-media-directory' ) }
-				>
-					{ tiles.map( ( item ) => (
-						<Tile
-							key={ item.id }
-							folder={ item }
-							nested={ nested }
-							onSelect={ view.setFolder }
-						/>
-					) ) }
-					{ can.manage && <NewFolderTile parent={ folder.id } /> }
-				</ul>
-			) }
+			{ showTiles &&
+				( tiles.length > 0 || ( can.manage && ! withActions ) ) && (
+					<ul
+						className="imd-tiles"
+						aria-label={ __(
+							'Subfolders',
+							'isudev-media-directory'
+						) }
+					>
+						{ tiles.map( ( item ) => (
+							<Tile
+								key={ item.id }
+								folder={ item }
+								nested={ nested }
+								onSelect={ view.setFolder }
+							/>
+						) ) }
+						{ can.manage && ! withActions && (
+							<NewFolderTile parent={ folder.id } />
+						) }
+					</ul>
+				) }
 		</div>
 	);
 }

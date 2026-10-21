@@ -42,8 +42,9 @@ as a reference for the import.
   it is not done. Fewer dialogs; prefer an Undo snackbar over "Are you sure?".
 - **Files are visible across the tree.** With "Show files from subfolders" on, a
   parent folder shows everything below it, and each tile says where the file
-  really lives (badge). The toggle stays visible above the tree, is remembered
-  per user, and the site default lives in Media → Folder settings.
+  really lives (badge). The switch stays visible in the panel header (pressed
+  icon button), is remembered per user, and the site default lives in Media →
+  Folder settings.
 - **Subfolders must be visible where the files are**: breadcrumb, subfolder
   tiles and the "N more files are in subfolders — Show them here" hint. A
   folder must never look empty while its subfolders hold files.
@@ -77,6 +78,15 @@ as a reference for the import.
   grid, then refills it — the "whole UI blinks" bug. Use `load()` in
   `src/media.js` (prefetch, then `mirror`). Same for refreshes: `load( browser )`,
   never `collection._requery()`.
+- **The list view never reloads the page** for a folder, subfolder-switch or
+  refresh: `load()` in `src/list.js` fetches the page for the new URL and swaps
+  `#the-list` and `.tablenav-pages` only (core binds the table's checkbox
+  handlers on `body`, so swapped rows keep working). A full navigation is only
+  the fallback when the fetch fails.
+- **Settings pages are white dashboard panels.** Every tab is built only from
+  core `.postbox` panels via `Settings\panel_open()` / `panel_close()` — no
+  `.card`, no bare `form-table` on the grey background, no custom look. All
+  tabs must look the same.
 - **No CSS `position: sticky` for the sidebar.** Core's media frame and the
   attachments browser hide overflow, so sticky binds to the grid and the panel
   jumps as the grid height changes. `src/fit-panel.js` positions it.
@@ -166,7 +176,7 @@ nvm use                # Node 22 (.nvmrc); older Node fails
 composer install       # PHPCS + plugin-update-checker
 npm install
 npm run build          # one-shot; never leave `npm start` watching in automated work
-npm run check          # lint:js, lint:css, lint:php, test:version, test:docs, test:i18n, test:smoke
+npm run check          # lint:js, lint:css, lint:php, test:js, test:version, test:docs, test:i18n, test:smoke
 ```
 
 - `test:smoke` — `wp eval-file tools/smoke.php`: repository, query filter, every
@@ -175,6 +185,9 @@ npm run check          # lint:js, lint:css, lint:php, test:version, test:docs, t
   site running: "Error establishing a database connection" (and HTTP 502 from
   the site) means the Local site is stopped — ask the developer to start it, it
   is not a code failure. Report the other checks as passed and smoke as skipped.
+- `test:js` — Jest unit tests in `src/test/` (jsdom; `wp-scripts test-unit-js`).
+  Pure-DOM logic that a browser would otherwise be needed to check goes into
+  its own WordPress-free module with a test, like `src/list-swap.js`.
 - `test:version` — plugin header, `VERSION`, `package.json`, `package-lock.json`
   and a `CHANGELOG.md` section agree.
 - `test:docs` — every file, REST route and hook appears in `docs/CODEMAP.md`;

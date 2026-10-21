@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.3.0 — 2026-10-21
+
+- List view: switching folders or the subfolder switch no longer reloads and
+  flashes the page; only the rows and pagination change. (0.2.0 tried this but
+  an invalid selector made it fall back to a full reload every time.)
+- Folder settings: every tab uses the same white dashboard panels.
+- List view: even 12px spacing between breadcrumb, subfolder tiles and the
+  filter bar.
+- Folder panel header: the title on its own line, under it a compact toolbar
+  with expand all, collapse all, "Show files from subfolders" as a pressed
+  icon button, New folder and ⚙.
+- Grid: "Subfolders (n)" and "Files from subfolders" toggles (same pressed
+  look) and a "New folder" button at the right of the breadcrumb.
+- Infinite scrolling in the grid and media modals on WordPress 7.0 too (core
+  only defaults to it from 7.1, where a user's profile opt-out is respected).
+
 ## 0.2.0 — 2026-10-21
 
 - Permissions: a role × action matrix (see, organize files, create and rename,

@@ -32,7 +32,7 @@ this file honest: every file, REST route and WordPress hook must appear here.
 | `query.php` | `…\Query` | Narrows attachment queries: `ajax_query_attachments_args` (grid + modals), `pre_get_posts` (list view), `posts_where` (the SQL), `the_posts` (primes folder IDs), `folders_of()` cache. |
 | `rest.php` | `…\REST` | All routes. Every write returns the fresh `tree` plus what the client needs to undo. |
 | `admin.php` | `…\Admin` | Enqueue on `wp_enqueue_media` + `upload.php`, `window.isudevMediaDirectory` config, `imdFolders` in attachment JSON, filing uploads (`add_attachment`), cleanup on `delete_attachment`. |
-| `settings.php` | `…\Settings` | Preferences: `preference_defs()` (nested, tiles, reveal, per_post_type), site defaults `get()`, per-user `prefs_for_user()` / `save_prefs_for_user()` / `prefs_for_js()`. Media → Folder settings (admins only) with tabs General (preference defaults), Permissions (matrix form), Import (per-source preview, merge/separate, HappyFiles permissions, cleanup with confirmation). Results via a per-user transient notice. |
+| `settings.php` | `…\Settings` | Every tab is white core `.postbox` panels (`panel_open()` / `panel_close()`, small inline CSS in `enqueue_styles()`). Preferences: `preference_defs()` (nested, tiles, reveal, per_post_type), site defaults `get()`, per-user `prefs_for_user()` / `save_prefs_for_user()` / `prefs_for_js()`. Media → Folder settings (admins only) with tabs General (preference defaults), Permissions (matrix form), Import (per-source preview, merge/separate, HappyFiles permissions, cleanup with confirmation). Results via a per-user transient notice. |
 | `permissions.php` | `…\Permissions` | Role × action matrix (option `isudev_media_directory_permissions`) granted as capabilities `imd_view_folders`, `imd_organize_files`, `imd_manage_folders`, `imd_delete_folders` via `user_has_cap`. `can_delete()` = delete cap, or manage cap on an empty folder. `for_js()` → `config.can`. |
 | `import.php` | `…\Import` | Import engine: `sources()` registry (filter `isudev_media_directory/import_sources`), `preview()`, `run( $source, merge\|separate )`, `happyfiles_permissions()`, `cleanup()` (refused while the source plugin is active), conflict notice. Idempotent via `import_ref = <source>:<source id>` (`<source>:root` for the separate-mode folder). |
 | `import/class-source.php` | `…\Import\Source` | Abstract source: `slug()`, `name()`, `folders()` (`[id => {name, parent}]`, parent `''` = root), `items()` (`[[folder id, attachment id]]`), `cleanup()`, `active_plugin()` (matches active plugins' "Plugin Name" against `plugin_patterns()`). |
@@ -54,6 +54,7 @@ this file honest: every file, REST route and WordPress hook must appear here.
 | `wp_prepare_attachment_for_js` | filter | `Admin\attachment_json` | `imdFolders` on every attachment model. |
 | `add_attachment` | action | `Admin\file_upload` | File an upload into its stamped folder. |
 | `delete_attachment` | action | `Admin\forget_attachment` | Drop deleted files from folders. |
+| `media_library_infinite_scrolling` | filter | `Admin\infinite_scrolling` | Force infinite scrolling on WP 7.0; from 7.1 core's value (with the user's profile opt-out) passes through. |
 | `ajax_query_attachments_args` | filter | `Query\ajax_args` | Folder for grid and modal queries. |
 | `pre_get_posts` | action | `Query\list_view` | Folder for the list view main query. |
 | `posts_where` | filter | `Query\where` | The folder SQL. |
@@ -143,17 +144,18 @@ join `folder`. From "All files"/"Not in a folder" (`from` = 0) it replaces all.
 | File | Role |
 | --- | --- |
 | `index.js` | Entry. Global Cmd/Ctrl+Z, grid↔list switch keeps the folder, mounts `Notices` root, boots list view. |
-| `store.js` | Shared state (`tree`, `nested`, `prefs`, `expanded`, `notices`, `deleting`); `can` / `canDeleteFolder()` (permissions); `setPref()`; `removeFolder()` (ask or delete); last-folder memory in localStorage (`imd:last-folder`, or `imd:last-folder:<typenow>` with per-content-type on) via `subscribe`/`getState`; tree helpers (`getChildren`, `getPath`, `isWithin`, `isVisibleIn`); server actions (`createFolder`, `renameFolder`, `moveFolder`, `deleteFolder`, `fileItems`, `setNested`, `refresh`); undo stack; snackbars. Notifies views through `registerView` handlers. |
+| `store.js` | Shared state (`tree`, `nested`, `prefs`, `expanded`, `notices`, `deleting`); `can` / `canDeleteFolder()` (permissions); `setPref()`; `removeFolder()` (ask or delete); `expandAll()` / `collapseAll()`; last-folder memory in localStorage (`imd:last-folder`, or `imd:last-folder:<typenow>` with per-content-type on) via `subscribe`/`getState`; tree helpers (`getChildren`, `getPath`, `isWithin`, `isVisibleIn`); server actions (`createFolder`, `renameFolder`, `moveFolder`, `deleteFolder`, `fileItems`, `setNested`, `refresh`); undo stack; snackbars. Notifies views through `registerView` handlers. |
 | `view.js` | `createView()` — one per place that shows files (grid, each modal browser, list). Holds the *selected* folder and the *shown* folder (lags while loading); expands the tree to the opened folder when `prefs.reveal`. `getActiveView()` decides where uploads go. `folderProps()` builds query props. |
 | `media.js` | Backbone patches: `AttachmentsBrowser.initialize/dispose` (mount sidebar + header, initial props, modal scroll fix), `load()` (prefetch-then-swap, no flicker), `Attachment.render` (folder badge), tile drag start, shift/cmd-click → bulk select, `wp.Uploader` folder stamping. |
-| `list.js` | List view: builds the layout around `#posts-filter`, URL navigation, row dragging, hidden inputs that keep the folder through filter submits. |
+| `list.js` | List view: builds the layout around `#posts-filter`; `load()` fetches the page for the new folder URL and swaps `#the-list` + `.tablenav-pages` (no reload, `history.replaceState`, full navigation only as fallback); row dragging; hidden inputs that keep the folder through filter submits. |
+| `list-swap.js` | Pure-DOM swap of `#the-list` + `.tablenav-pages` from a fetched page; unit-tested in `src/test/list-swap.test.js`. Standard CSS selectors only (jQuery's `:checkbox` throws). |
 | `drag.js` | Current drag payload (`files` or `folder`), custom drag image, `imd-is-dragging` body class. |
 | `fit-panel.js` | Keeps the sidebar panel in the viewport and full height (replaces CSS sticky, see AGENTS.md). |
-| `components/sidebar.js` | Tree: special rows, `FolderRow` (expand, inline rename, drag, context menu, keyboard), new-folder row, folder search, nested toggle, ⚙ `ViewOptions` menu, scroll to the open folder. |
-| `components/content-header.js` | Breadcrumb, "N more files in subfolders" hint, subfolder tiles (drop targets, right-click `TileMenu` rename/delete, F2) and a `NewFolderTile`. Nothing on "All files"; tiles only with `prefs.tiles`. Follows the *shown* folder. |
+| `components/sidebar.js` | Header: expand all / collapse all, "files from subfolders" pressed-icon switch, divider, new folder, ⚙ `ViewOptions` menu. Tree: special rows, `FolderRow` (expand, inline rename, drag, context menu, keyboard), new-folder row, folder search, scroll to the open folder. |
+| `components/content-header.js` | Breadcrumb, "N more files in subfolders" hint, subfolder tiles (drop targets, right-click `TileMenu` rename/delete, F2) and a `NewFolderTile`. Nothing on "All files"; tiles only with `prefs.tiles`. Experiment, grid only: `HeaderActions` (pressed toggles for tiles and files from subfolders, new folder) right of the breadcrumb; the new-folder tile is then hidden. Follows the *shown* folder. |
 | `components/delete-folder-modal.js` | "What happens to the files?" dialog. |
 | `components/notices.js` | Snackbars + the delete dialog, rendered once per page above the media modal. |
-| `components/common.js` | `useStore`, `useViewFolder`, `useDropTarget`, `NameInput`, folder icons. |
+| `components/common.js` | `useStore`, `useViewFolder`, `useDropTarget`, `NameInput`, icons (folder, all files, unfiled, nested, collapse all). |
 | `style.scss` | All styles; sections per area (panel/tree, grid, modal, list, header, tiles, snackbars, delete dialog). |
 
 ### Main flows
@@ -183,6 +185,7 @@ skip straight to `deleteFolder`) → `DeleteFolderModal` → `DELETE /folders/{i
 
 | Path | What |
 | --- | --- |
+| `src/test/*.test.js` | `npm run test:js` — Jest + jsdom unit tests for WordPress-free modules. |
 | `tools/smoke.php` | `npm run test:smoke` — WP-CLI end-to-end against the real DB. |
 | `tools/check-translations.php` | `npm run test:i18n` — every locale in `languages/` complete, plural counts right, compiled files fresh. |
 | `tools/check-version.php` | `npm run test:version` — version agrees in all places; prints it for CI. |
@@ -254,5 +257,6 @@ admin (`docs/VERIFY.md`), plus `npm run check`.
 | `ajax_query_attachments_args` + raw `$_REQUEST['query']` (core whitelists keys) | `query.php` | Every folder shows all files |
 | Modal CSS: `.attachments-browser .attachments` absolute at `top: 72px`, `right: 300px`; 900px breakpoint `top: 131px`, `right: 262px` | `style.scss` modal section | Header hidden behind files, overlap |
 | Grid toolbar `.wp-filter` `margin: 12px 0`; `.media-frame` / browser `overflow: hidden` | `style.scss`, `fit-panel.js` | Sidebar misaligned, cut off |
-| List table `#posts-filter`, `#the-list tr#post-<id>`, `input[name="media[]"]`, `.view-switch a` | `list.js`, `index.js` | List view without sidebar, rows not draggable |
+| List table `#posts-filter`, `#the-list tr#post-<id>`, `.tablenav .tablenav-pages`, `input[name="media[]"]`, `.view-switch a`; core's check-column handlers delegated on `body` | `list.js`, `index.js` | List view without sidebar, rows not draggable, folder switch shows stale rows/pagination, "select all" dead after a switch |
+| Core `.postbox` / `.postbox-header` / `.inside` markup and styles | `settings.php` | Settings tabs lose their white panels |
 | Media modal z-index 160000 | `style.scss` (`.imd-delete-overlay` 170000, snackbars 200000) | Dialog/snackbars behind the modal |
