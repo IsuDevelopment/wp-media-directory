@@ -22,3 +22,5 @@ $wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}imd_folders" );
 delete_option( 'isudev_media_directory_db_version' );
 delete_option( 'isudev_media_directory_settings' );
 delete_metadata( 'user', 0, 'isudev_media_directory_nested', '', true );
+delete_metadata( 'user', 0, 'isudev_media_directory_prefs', '', true );
+delete_option( 'isudev_media_directory_permissions' );

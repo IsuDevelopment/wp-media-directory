@@ -9,11 +9,13 @@ import {
 	SearchControl,
 	ToggleControl,
 } from '@wordpress/components';
-import { useRef, useState } from '@wordpress/element';
+import { useEffect, useRef, useState } from '@wordpress/element';
 import { __, _n, sprintf } from '@wordpress/i18n';
 import {
+	check,
 	chevronDown,
 	chevronRight,
+	cog,
 	moreVertical,
 	plus,
 } from '@wordpress/icons';
@@ -24,15 +26,17 @@ import {
 	UNASSIGNED,
 	config,
 	createFolder,
-	deleteFolder,
 	getChildren,
 	getFolder,
 	getPath,
 	isExpanded,
 	renameFolder,
-	requestDelete,
+	removeFolder,
+	can,
+	canDeleteFolder,
 	setExpanded,
 	setNested,
+	setPref,
 } from '../store';
 import { startFolder } from '../drag';
 import {
@@ -157,13 +161,11 @@ function FolderRow( {
 		setCreatingIn( folder.id );
 	}
 
-	// Folders with files ask what to do with them; empty ones go straight away (undo is there).
+	const mayDelete = canDeleteFolder( folder );
+	const hasMenu = can.manage || mayDelete;
+
 	function remove() {
-		if ( folder.total ) {
-			requestDelete( folder.id );
-		} else {
-			deleteFolder( folder.id ).catch( () => {} );
-		}
+		removeFolder( folder );
 	}
 
 	function onKeyDown( event ) {
@@ -191,13 +193,17 @@ function FolderRow( {
 				}
 				break;
 			case 'F2':
-				event.preventDefault();
-				setEditing( folder.id );
+				if ( can.manage ) {
+					event.preventDefault();
+					setEditing( folder.id );
+				}
 				break;
 			case 'Delete':
 			case 'Backspace':
-				event.preventDefault();
-				remove();
+				if ( mayDelete ) {
+					event.preventDefault();
+					remove();
+				}
 				break;
 		}
 	}
@@ -215,7 +221,7 @@ function FolderRow( {
 					'is-drop-target': isOver,
 				} ) }
 				style={ { '--imd-depth': depth } }
-				onContextMenu={ openContextMenu }
+				onContextMenu={ hasMenu ? openContextMenu : undefined }
 				{ ...dropProps }
 			>
 				{ children.length ? (
@@ -258,12 +264,14 @@ function FolderRow( {
 					<button
 						type="button"
 						className="imd-row__main"
-						draggable
+						draggable={ can.manage }
 						onDragStart={ ( event ) =>
-							startFolder( event, folder )
+							can.manage && startFolder( event, folder )
 						}
 						onClick={ () => onSelect( folder.id ) }
-						onDoubleClick={ () => setEditing( folder.id ) }
+						onDoubleClick={ () =>
+							can.manage && setEditing( folder.id )
+						}
 						onKeyDown={ onKeyDown }
 						title={ getPath( folder.id )
 							.map( ( item ) => item.name )
@@ -294,61 +302,79 @@ function FolderRow( {
 					</button>
 				) }
 
-				<DropdownMenu
-					className="imd-row__menu"
-					icon={ moreVertical }
-					label={ __( 'Folder actions', 'isudev-media-directory' ) }
-					toggleProps={ {
-						size: 'small',
-						tabIndex: -1,
-						onClick: () => setMenuAnchor( null ),
-					} }
-					open={ menuOpen }
-					onToggle={ setMenuOpen }
-					popoverProps={
-						menuAnchor
-							? { anchor: menuAnchor, placement: 'bottom-start' }
-							: { placement: 'bottom-end' }
-					}
-				>
-					{ ( { onClose } ) => (
-						<>
-							<MenuGroup>
-								<MenuItem
-									onClick={ () => {
-										onClose();
-										startSubfolder();
-									} }
-								>
-									{ __(
-										'New subfolder',
-										'isudev-media-directory'
-									) }
-								</MenuItem>
-								<MenuItem
-									shortcut="F2"
-									onClick={ () => {
-										onClose();
-										setEditing( folder.id );
-									} }
-								>
-									{ __( 'Rename', 'isudev-media-directory' ) }
-								</MenuItem>
-							</MenuGroup>
-							<MenuGroup>
-								<MenuItem
-									isDestructive
-									onClick={ () => {
-										onClose();
-										remove();
-									} }
-								>
-									{ __( 'Delete', 'isudev-media-directory' ) }
-								</MenuItem>
-							</MenuGroup>
-						</>
-					) }
-				</DropdownMenu>
+				{ hasMenu && (
+					<DropdownMenu
+						className="imd-row__menu"
+						icon={ moreVertical }
+						label={ __(
+							'Folder actions',
+							'isudev-media-directory'
+						) }
+						toggleProps={ {
+							size: 'small',
+							tabIndex: -1,
+							onClick: () => setMenuAnchor( null ),
+						} }
+						open={ menuOpen }
+						onToggle={ setMenuOpen }
+						popoverProps={
+							menuAnchor
+								? {
+										anchor: menuAnchor,
+										placement: 'bottom-start',
+								  }
+								: { placement: 'bottom-end' }
+						}
+					>
+						{ ( { onClose } ) => (
+							<>
+								{ can.manage && (
+									<MenuGroup>
+										<MenuItem
+											onClick={ () => {
+												onClose();
+												startSubfolder();
+											} }
+										>
+											{ __(
+												'New subfolder',
+												'isudev-media-directory'
+											) }
+										</MenuItem>
+										<MenuItem
+											shortcut="F2"
+											onClick={ () => {
+												onClose();
+												setEditing( folder.id );
+											} }
+										>
+											{ __(
+												'Rename',
+												'isudev-media-directory'
+											) }
+										</MenuItem>
+									</MenuGroup>
+								) }
+								{ mayDelete && (
+									<MenuGroup>
+										<MenuItem
+											isDestructive
+											onClick={ () => {
+												onClose();
+												remove();
+											} }
+										>
+											{ __(
+												'Delete',
+												'isudev-media-directory'
+											) }
+										</MenuItem>
+									</MenuGroup>
+								) }
+							</>
+						) }
+					</DropdownMenu>
+				) }
 			</div>
 
 			{ ( ( open && visibleChildren.length > 0 ) ||
@@ -440,13 +466,74 @@ function matchFolders( folders, search ) {
 	return visible;
 }
 
+// The user's own behaviour preferences; site defaults live in Folder settings.
+function ViewOptions( { prefs } ) {
+	const options = [
+		[
+			'tiles',
+			__( 'Show subfolders above the files', 'isudev-media-directory' ),
+		],
+		[
+			'reveal',
+			__(
+				'Open the current folder in the tree',
+				'isudev-media-directory'
+			),
+		],
+		[
+			'perPostType',
+			__(
+				'Remember the last folder separately for each content type',
+				'isudev-media-directory'
+			),
+		],
+	];
+
+	return (
+		<DropdownMenu
+			className="imd-panel__options"
+			icon={ cog }
+			label={ __( 'View options', 'isudev-media-directory' ) }
+			toggleProps={ { size: 'compact' } }
+			popoverProps={ { placement: 'bottom-end' } }
+		>
+			{ () => (
+				<MenuGroup
+					label={ __( 'View options', 'isudev-media-directory' ) }
+				>
+					{ options.map( ( [ key, label ] ) => (
+						<MenuItem
+							key={ key }
+							role="menuitemcheckbox"
+							isSelected={ !! prefs[ key ] }
+							icon={ prefs[ key ] ? check : null }
+							onClick={ () => setPref( key, ! prefs[ key ] ) }
+						>
+							{ label }
+						</MenuItem>
+					) ) }
+				</MenuGroup>
+			) }
+		</DropdownMenu>
+	);
+}
+
 export default function Sidebar( { view } ) {
-	const { tree, nested } = useStore();
+	const { tree, nested, prefs } = useStore();
 	const current = useViewFolder( view );
 	const [ editing, setEditing ] = useState( null );
 	const [ creatingIn, setCreatingIn ] = useState( undefined );
 	const [ search, setSearch ] = useState( '' );
 	const treeRef = useRef();
+
+	// "Open the current folder in the tree": keep the open folder in view.
+	useEffect( () => {
+		if ( prefs.reveal && typeof current === 'number' ) {
+			treeRef.current
+				?.querySelector( '.imd-row.is-selected' )
+				?.scrollIntoView( { block: 'nearest' } );
+		}
+	}, [ current, prefs.reveal ] );
 
 	const filter = matchFolders( tree.folders, search );
 	const roots = getChildren( 0 ).filter(
@@ -471,23 +558,26 @@ export default function Sidebar( { view } ) {
 				<h2 className="imd-panel__title">
 					{ __( 'Folders', 'isudev-media-directory' ) }
 				</h2>
-				<Button
-					icon={ plus }
-					size="compact"
-					label={
-						typeof current === 'number'
-							? sprintf(
-									/* translators: %s: folder name. */
-									__(
-										'New folder in “%s”',
-										'isudev-media-directory'
-									),
-									getFolder( current )?.name
-							  )
-							: __( 'New folder', 'isudev-media-directory' )
-					}
-					onClick={ newFolder }
-				/>
+				{ can.manage && (
+					<Button
+						icon={ plus }
+						size="compact"
+						label={
+							typeof current === 'number'
+								? sprintf(
+										/* translators: %s: folder name. */
+										__(
+											'New folder in “%s”',
+											'isudev-media-directory'
+										),
+										getFolder( current )?.name
+								  )
+								: __( 'New folder', 'isudev-media-directory' )
+						}
+						onClick={ newFolder }
+					/>
+				) }
+				<ViewOptions prefs={ prefs } />
 			</div>
 
 			<div className="imd-panel__nested">
@@ -575,16 +665,18 @@ export default function Sidebar( { view } ) {
 					/>
 				) ) }
 
-				{ ! tree.folders.length && creatingIn === undefined && (
-					<li className="imd-tree__empty" role="none">
-						<Button variant="link" onClick={ newFolder }>
-							{ __(
-								'Create your first folder',
-								'isudev-media-directory'
-							) }
-						</Button>
-					</li>
-				) }
+				{ can.manage &&
+					! tree.folders.length &&
+					creatingIn === undefined && (
+						<li className="imd-tree__empty" role="none">
+							<Button variant="link" onClick={ newFolder }>
+								{ __(
+									'Create your first folder',
+									'isudev-media-directory'
+								) }
+							</Button>
+						</li>
+					) }
 
 				{ filter && ! roots.length && (
 					<li className="imd-tree__empty" role="none">

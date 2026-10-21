@@ -13,6 +13,7 @@ declare( strict_types = 1 );
 namespace IsuDevMediaDirectory\REST;
 
 use IsuDevMediaDirectory\Folders;
+use IsuDevMediaDirectory\Permissions;
 use IsuDevMediaDirectory\Settings;
 use WP_Error;
 use WP_REST_Request;
@@ -33,12 +34,48 @@ function boot(): void {
 }
 
 /**
- * Who may use the folders.
+ * May see folders (and save their own view preference).
  *
  * @return bool
  */
-function can_manage(): bool {
-	return current_user_can( 'upload_files' );
+function can_view(): bool {
+	return current_user_can( 'upload_files' ) && Permissions\can( Permissions\VIEW );
+}
+
+/**
+ * May move files between folders.
+ *
+ * @return bool
+ */
+function can_organize(): bool {
+	return current_user_can( 'upload_files' ) && Permissions\can( Permissions\ORGANIZE );
+}
+
+/**
+ * May create, rename and move folders.
+ *
+ * @return bool
+ */
+function can_manage_folders(): bool {
+	return current_user_can( 'upload_files' ) && Permissions\can( Permissions\MANAGE );
+}
+
+/**
+ * May delete or restore folders; the per-folder rule is in delete_folder().
+ *
+ * @return bool
+ */
+function can_remove_folders(): bool {
+	return can_manage_folders() || ( current_user_can( 'upload_files' ) && Permissions\can( Permissions\DELETE ) );
+}
+
+/**
+ * The 403 every permission failure inside a callback returns.
+ *
+ * @return WP_Error
+ */
+function forbidden(): WP_Error {
+	return new WP_Error( 'imd_forbidden', __( 'Sorry, you are not allowed to do that.', 'isudev-media-directory' ), array( 'status' => 403 ) );
 }
 
 /**
@@ -59,12 +96,12 @@ function register_routes(): void {
 			array(
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => __NAMESPACE__ . '\\get_tree',
-				'permission_callback' => __NAMESPACE__ . '\\can_manage',
+				'permission_callback' => __NAMESPACE__ . '\\can_view',
 			),
 			array(
 				'methods'             => WP_REST_Server::CREATABLE,
 				'callback'            => __NAMESPACE__ . '\\create_folder',
-				'permission_callback' => __NAMESPACE__ . '\\can_manage',
+				'permission_callback' => __NAMESPACE__ . '\\can_manage_folders',
 				'args'                => array(
 					'name'   => array(
 						'type'     => 'string',
@@ -86,7 +123,7 @@ function register_routes(): void {
 			array(
 				'methods'             => WP_REST_Server::EDITABLE,
 				'callback'            => __NAMESPACE__ . '\\update_folder',
-				'permission_callback' => __NAMESPACE__ . '\\can_manage',
+				'permission_callback' => __NAMESPACE__ . '\\can_manage_folders',
 				'args'                => array(
 					'id'     => $id_arg,
 					'name'   => array( 'type' => 'string' ),
@@ -96,7 +133,7 @@ function register_routes(): void {
 			array(
 				'methods'             => WP_REST_Server::DELETABLE,
 				'callback'            => __NAMESPACE__ . '\\delete_folder',
-				'permission_callback' => __NAMESPACE__ . '\\can_manage',
+				'permission_callback' => __NAMESPACE__ . '\\can_remove_folders',
 				'args'                => array(
 					'id'     => $id_arg,
 					'files'  => array(
@@ -120,7 +157,7 @@ function register_routes(): void {
 		array(
 			'methods'             => WP_REST_Server::CREATABLE,
 			'callback'            => __NAMESPACE__ . '\\restore_folder',
-			'permission_callback' => __NAMESPACE__ . '\\can_manage',
+			'permission_callback' => __NAMESPACE__ . '\\can_remove_folders',
 			'args'                => array(
 				'snapshot' => array(
 					'type'     => 'object',
@@ -136,7 +173,7 @@ function register_routes(): void {
 		array(
 			'methods'             => WP_REST_Server::CREATABLE,
 			'callback'            => __NAMESPACE__ . '\\file_items',
-			'permission_callback' => __NAMESPACE__ . '\\can_manage',
+			'permission_callback' => __NAMESPACE__ . '\\can_organize',
 			'args'                => array(
 				'ids'    => array(
 					'type'     => 'array',
@@ -170,7 +207,7 @@ function register_routes(): void {
 		array(
 			'methods'             => WP_REST_Server::CREATABLE,
 			'callback'            => __NAMESPACE__ . '\\set_items',
-			'permission_callback' => __NAMESPACE__ . '\\can_manage',
+			'permission_callback' => __NAMESPACE__ . '\\can_organize',
 			'args'                => array(
 				'map' => array(
 					'type'     => 'object',
@@ -186,12 +223,12 @@ function register_routes(): void {
 		array(
 			'methods'             => WP_REST_Server::CREATABLE,
 			'callback'            => __NAMESPACE__ . '\\save_preferences',
-			'permission_callback' => __NAMESPACE__ . '\\can_manage',
+			'permission_callback' => __NAMESPACE__ . '\\can_view',
 			'args'                => array(
-				'nested' => array(
-					'type'     => 'boolean',
-					'required' => true,
-				),
+				'nested'      => array( 'type' => 'boolean' ),
+				'tiles'       => array( 'type' => 'boolean' ),
+				'reveal'      => array( 'type' => 'boolean' ),
+				'perPostType' => array( 'type' => 'boolean' ),
 			),
 		)
 	);
@@ -308,7 +345,16 @@ function delete_folder( WP_REST_Request $request ) {
 
 	$subtree     = Folders\subtree( $id );
 	$attachments = Folders\attachments_in( $subtree );
-	$target      = (int) $request['target'];
+
+	$stats = array(
+		'total'        => count( $attachments ),
+		'has_children' => count( $subtree ) > 1,
+	);
+
+	if ( ! Permissions\can_delete( $stats ) ) {
+		return forbidden();
+	}
+	$target = (int) $request['target'];
 
 	if ( -1 === $target ) {
 		$target = Folders\all()[ $id ]['parent'];
@@ -470,7 +516,13 @@ function set_items( WP_REST_Request $request ): WP_REST_Response {
  * @return WP_REST_Response
  */
 function save_preferences( WP_REST_Request $request ): WP_REST_Response {
-	update_user_meta( get_current_user_id(), Settings\USER_NESTED_META, $request['nested'] ? '1' : '0' );
+	$changes = array();
 
-	return new WP_REST_Response( array( 'nested' => (bool) $request['nested'] ) );
+	foreach ( array( 'nested', 'tiles', 'reveal', 'perPostType' ) as $param ) {
+		if ( null !== $request[ $param ] ) {
+			$changes[ 'perPostType' === $param ? 'per_post_type' : $param ] = (bool) $request[ $param ];
+		}
+	}
+
+	return new WP_REST_Response( Settings\prefs_for_js( Settings\save_prefs_for_user( $changes ) ) );
 }

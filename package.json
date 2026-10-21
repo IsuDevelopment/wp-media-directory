@@ -1,6 +1,6 @@
 {
 	"name": "@isudev/media-directory",
-	"version": "0.1.0",
+	"version": "0.2.0",
 	"description": "Simple, fast folders for the WordPress Media Library.",
 	"license": "GPL-2.0-or-later",
 	"private": true,
@@ -37,7 +37,8 @@
 		"lint:php": "vendor/bin/phpcs",
 		"test:smoke": "wp eval-file tools/smoke.php",
 		"test:i18n": "php tools/check-translations.php",
-		"check": "npm run lint:js && npm run lint:css && npm run lint:php && npm run test:version && npm run test:i18n && npm run test:smoke",
-		"test:version": "php tools/check-version.php"
+		"check": "npm run lint:js && npm run lint:css && npm run lint:php && npm run test:version && npm run test:docs && npm run test:i18n && npm run test:smoke",
+		"test:version": "php tools/check-version.php",
+		"test:docs": "php tools/check-docs.php"
 	}
 }

@@ -13,6 +13,19 @@ const LAST_FOLDER_KEY = 'imd:last-folder';
 const EXPANDED_KEY = 'imd:expanded';
 
 export const ALL = null;
+
+/**
+ * What the current user may do (from the Permissions matrix). The server
+ * enforces it; the UI only hides what would be refused.
+ */
+export const can = {
+	view: true,
+	organize: true,
+	manage: true,
+	delete: true,
+	deleteFiles: true,
+	...( window.isudevMediaDirectory?.can || {} ),
+};
 export const UNASSIGNED = 'unassigned';
 
 function readStorage( key, fallback ) {
@@ -35,6 +48,13 @@ function writeStorage( key, value ) {
 let state = {
 	tree: config.tree,
 	nested: !! config.nested,
+	prefs: {
+		nested: !! config.nested,
+		tiles: true,
+		reveal: true,
+		perPostType: false,
+		...( config.prefs || {} ),
+	},
 	expanded: readStorage( EXPANDED_KEY, [] ),
 	notices: [],
 	busy: false,
@@ -99,6 +119,34 @@ function getIndex() {
 	index = { byId, children };
 
 	return index;
+}
+
+/**
+ * Whether the current user may delete a folder. Empty folders only need
+ * "Create and rename", matching Permissions\\can_delete().
+ *
+ * @param {Object} folder Folder.
+ * @return {boolean} Allowed.
+ */
+export function canDeleteFolder( folder ) {
+	return (
+		can.delete ||
+		( can.manage && ! folder.total && ! getChildren( folder.id ).length )
+	);
+}
+
+/**
+ * Delete from the UI: folders holding files ask what to do with them, empty
+ * ones go straight away (Undo is there).
+ *
+ * @param {Object} folder Folder.
+ */
+export function removeFolder( folder ) {
+	if ( folder.total ) {
+		requestDelete( folder.id );
+	} else {
+		deleteFolder( folder.id ).catch( () => {} );
+	}
 }
 
 export function getFolder( id ) {
@@ -176,12 +224,28 @@ export function normalizeFolder( value ) {
 	return id && getFolder( id ) ? id : ALL;
 }
 
+/**
+ * Storage key for the last open folder; one per content type when the user
+ * opted in ("Remember the last folder separately for each content type").
+ *
+ * @return {string} Key.
+ */
+function lastFolderKey() {
+	if ( ! state.prefs.perPostType ) {
+		return LAST_FOLDER_KEY;
+	}
+
+	// `typenow` is the post type of the screen (product, post, page…); the
+	// Media Library itself has none.
+	return `${ LAST_FOLDER_KEY }:${ window.typenow || 'library' }`;
+}
+
 export function getLastFolder() {
-	return normalizeFolder( readStorage( LAST_FOLDER_KEY, null ) );
+	return normalizeFolder( readStorage( lastFolderKey(), null ) );
 }
 
 export function rememberFolder( folder ) {
-	writeStorage( LAST_FOLDER_KEY, folder );
+	writeStorage( lastFolderKey(), folder );
 }
 
 /* ----------------------------------------------------------------------------
@@ -316,9 +380,25 @@ export function refresh() {
 }
 
 export function setNested( nested ) {
-	setState( { nested } );
+	setState( { nested, prefs: { ...state.prefs, nested } } );
 	eachView( 'onNestedChange', nested );
 	request( '/preferences', { data: { nested } } ).catch( () => {} );
+}
+
+/**
+ * Change one of the user's own preferences (the ⚙ menu).
+ *
+ * @param {string}  key   tiles | reveal | perPostType (nested: use setNested).
+ * @param {boolean} value On or off.
+ */
+export function setPref( key, value ) {
+	if ( key === 'nested' ) {
+		setNested( value );
+		return;
+	}
+
+	setState( { prefs: { ...state.prefs, [ key ]: value } } );
+	request( '/preferences', { data: { [ key ]: value } } ).catch( () => {} );
 }
 
 function pushUndo( entry ) {

@@ -1,6 +1,7 @@
 <?php
 /**
- * Settings page (Media → Folder settings) and per-user preferences.
+ * Settings page (Media → Folder settings): General, Permissions and Import
+ * tabs, plus the per-user subfolder preference.
  *
  * @package IsuDevMediaDirectory
  */
@@ -10,12 +11,15 @@ declare( strict_types = 1 );
 namespace IsuDevMediaDirectory\Settings;
 
 use IsuDevMediaDirectory\Import;
+use IsuDevMediaDirectory\Permissions;
 
 defined( 'ABSPATH' ) || exit;
 
 const OPTION           = 'isudev_media_directory_settings';
 const USER_NESTED_META = 'isudev_media_directory_nested';
+const PREFS_META       = 'isudev_media_directory_prefs';
 const PAGE             = 'isudev-media-directory';
+const NOTICE           = 'isudev_media_directory_notice_';
 
 /**
  * Hook the settings page.
@@ -26,33 +30,126 @@ function boot(): void {
 	add_action( 'admin_menu', __NAMESPACE__ . '\\add_page' );
 	add_action( 'admin_init', __NAMESPACE__ . '\\register' );
 	add_action( 'admin_post_isudev_media_directory_import', __NAMESPACE__ . '\\handle_import' );
+	add_action( 'admin_post_isudev_media_directory_cleanup', __NAMESPACE__ . '\\handle_cleanup' );
 }
 
 /**
- * Saved settings merged with defaults.
+ * Behaviour preferences: key => [ site default, label, help ]. Admins set the
+ * defaults on the General tab; each user overrides them from the ⚙ menu above
+ * the folder tree (stored in their user meta).
  *
- * @return array{nested: bool}
+ * @return array<string, array{default:bool, label:string, help:string}>
+ */
+function preference_defs(): array {
+	return array(
+		'nested'        => array(
+			'default' => true,
+			'label'   => __( 'Show files from subfolders in parent folders', 'isudev-media-directory' ),
+			'help'    => __( 'Also switchable with the toggle above the folder tree.', 'isudev-media-directory' ),
+		),
+		'tiles'         => array(
+			'default' => true,
+			'label'   => __( 'Show subfolders above the files', 'isudev-media-directory' ),
+			'help'    => __( 'Breadcrumb tiles for the folders inside the open folder, with a “New folder” tile.', 'isudev-media-directory' ),
+		),
+		'reveal'        => array(
+			'default' => true,
+			'label'   => __( 'Open the current folder in the tree', 'isudev-media-directory' ),
+			'help'    => __( 'Expands the tree to the folder you open from a tile or the breadcrumb.', 'isudev-media-directory' ),
+		),
+		'per_post_type' => array(
+			'default' => false,
+			'label'   => __( 'Remember the last folder separately for each content type', 'isudev-media-directory' ),
+			'help'    => __( 'For example one folder when adding images to products and another for posts.', 'isudev-media-directory' ),
+		),
+	);
+}
+
+/**
+ * Site defaults for every preference.
+ *
+ * @return array<string, bool>
  */
 function get(): array {
-	$saved = get_option( OPTION, array() );
+	$saved    = get_option( OPTION, array() );
+	$settings = array();
 
+	foreach ( preference_defs() as $key => $def ) {
+		$settings[ $key ] = isset( $saved[ $key ] ) ? (bool) $saved[ $key ] : $def['default'];
+	}
+
+	return $settings;
+}
+
+/**
+ * The current user's preferences: their own choices over the site defaults.
+ *
+ * @return array<string, bool>
+ */
+function prefs_for_user(): array {
+	$prefs = get();
+	$own   = get_user_meta( get_current_user_id(), PREFS_META, true );
+	$own   = is_array( $own ) ? $own : array();
+
+	// 0.1.0 stored only the subfolder toggle, under its own key.
+	$legacy = get_user_meta( get_current_user_id(), USER_NESTED_META, true );
+
+	if ( ! isset( $own['nested'] ) && '' !== $legacy ) {
+		$own['nested'] = '1' === $legacy;
+	}
+
+	foreach ( array_keys( $prefs ) as $key ) {
+		if ( isset( $own[ $key ] ) ) {
+			$prefs[ $key ] = (bool) $own[ $key ];
+		}
+	}
+
+	return $prefs;
+}
+
+/**
+ * Save some of the current user's preferences.
+ *
+ * @param array<string, bool> $changes Keys from preference_defs().
+ * @return array<string, bool> All preferences after saving.
+ */
+function save_prefs_for_user( array $changes ): array {
+	$own = get_user_meta( get_current_user_id(), PREFS_META, true );
+	$own = is_array( $own ) ? $own : array();
+
+	foreach ( array_keys( preference_defs() ) as $key ) {
+		if ( array_key_exists( $key, $changes ) ) {
+			$own[ $key ] = (bool) $changes[ $key ];
+		}
+	}
+
+	update_user_meta( get_current_user_id(), PREFS_META, $own );
+
+	return prefs_for_user();
+}
+
+/**
+ * Preferences with the JS key names.
+ *
+ * @param array<string, bool> $prefs From prefs_for_user().
+ * @return array<string, bool>
+ */
+function prefs_for_js( array $prefs ): array {
 	return array(
-		'nested' => isset( $saved['nested'] ) ? (bool) $saved['nested'] : true,
+		'nested'      => $prefs['nested'],
+		'tiles'       => $prefs['tiles'],
+		'reveal'      => $prefs['reveal'],
+		'perPostType' => $prefs['per_post_type'],
 	);
 }
 
 /**
  * Whether the current user sees files from subfolders.
  *
- * The toggle in the sidebar is remembered per user; the setting is only the
- * starting point for users who never touched it.
- *
  * @return bool
  */
 function nested_for_user(): bool {
-	$meta = get_user_meta( get_current_user_id(), USER_NESTED_META, true );
-
-	return '' === $meta ? get()['nested'] : '1' === $meta;
+	return prefs_for_user()['nested'];
 }
 
 /**
@@ -72,7 +169,8 @@ function add_page(): void {
 }
 
 /**
- * Register the option.
+ * Register the options. Each tab is its own settings group, so saving one
+ * tab never resets another.
  *
  * @return void
  */
@@ -83,9 +181,80 @@ function register(): void {
 		array(
 			'type'              => 'object',
 			'sanitize_callback' => static function ( $value ) {
-				return array( 'nested' => ! empty( $value['nested'] ) );
+				$clean = array();
+
+				foreach ( array_keys( preference_defs() ) as $key ) {
+					$clean[ $key ] = ! empty( $value[ $key ] );
+				}
+
+				return $clean;
 			},
 		)
+	);
+
+	register_setting(
+		PAGE . '-permissions',
+		Permissions\OPTION,
+		array(
+			'type'              => 'object',
+			'sanitize_callback' => __NAMESPACE__ . '\\sanitize_permissions',
+		)
+	);
+}
+
+/**
+ * Sanitize callback for the permission matrix.
+ *
+ * @param mixed $value Submitted matrix.
+ * @return array<string, array<string, bool>>
+ */
+function sanitize_permissions( $value ): array {
+	return Permissions\sanitize( $value );
+}
+
+/**
+ * The tab being shown.
+ *
+ * @return string
+ */
+function current_tab(): string {
+	// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Navigation only.
+	$tab = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'general';
+
+	return in_array( $tab, array( 'general', 'permissions', 'import' ), true ) ? $tab : 'general';
+}
+
+/**
+ * URL of a tab.
+ *
+ * @param string $tab Tab.
+ * @return string
+ */
+function tab_url( string $tab ): string {
+	return add_query_arg(
+		array(
+			'page' => PAGE,
+			'tab'  => $tab,
+		),
+		admin_url( 'upload.php' )
+	);
+}
+
+/**
+ * Keep a result message for the next page load of this user.
+ *
+ * @param string $type    success | error | warning.
+ * @param string $message Message.
+ * @return void
+ */
+function flash( string $type, string $message ): void {
+	set_transient(
+		NOTICE . get_current_user_id(),
+		array(
+			'type'    => $type,
+			'message' => $message,
+		),
+		MINUTE_IN_SECONDS
 	);
 }
 
@@ -95,97 +264,402 @@ function register(): void {
  * @return void
  */
 function render(): void {
-	$settings = get();
-	$source   = Import\happyfiles_summary();
+	$tab    = current_tab();
+	$notice = get_transient( NOTICE . get_current_user_id() );
 
-	// phpcs:disable WordPress.Security.NonceVerification.Recommended -- Display-only notice after redirect.
-	$imported = isset( $_GET['imd_imported'] ) ? absint( $_GET['imd_imported'] ) : null;
-	$filed    = isset( $_GET['imd_filed'] ) ? absint( $_GET['imd_filed'] ) : 0;
-	// phpcs:enable
+	if ( $notice ) {
+		delete_transient( NOTICE . get_current_user_id() );
+	}
+
+	$tabs = array(
+		'general'     => __( 'General', 'isudev-media-directory' ),
+		'permissions' => __( 'Permissions', 'isudev-media-directory' ),
+		'import'      => __( 'Import', 'isudev-media-directory' ),
+	);
 	?>
 	<div class="wrap">
 		<h1><?php esc_html_e( 'Folder settings', 'isudev-media-directory' ); ?></h1>
 
-		<?php if ( null !== $imported ) : ?>
-			<div class="notice notice-success is-dismissible">
-				<p>
-					<?php
-					printf(
-						/* translators: 1: number of folders, 2: number of files. */
-						esc_html__( 'Imported %1$d folders and filed %2$d files.', 'isudev-media-directory' ),
-						(int) $imported,
-						(int) $filed
-					);
-					?>
-				</p>
-			</div>
+		<?php if ( is_array( $notice ) ) : ?>
+			<div class="notice notice-<?php echo esc_attr( $notice['type'] ); ?> is-dismissible"><p><?php echo esc_html( $notice['message'] ); ?></p></div>
 		<?php endif; ?>
 
-		<form method="post" action="options.php">
-			<?php settings_fields( PAGE ); ?>
-			<table class="form-table" role="presentation">
-				<tr>
-					<th scope="row"><?php esc_html_e( 'Subfolders', 'isudev-media-directory' ); ?></th>
-					<td>
-						<label>
-							<input type="checkbox" name="<?php echo esc_attr( OPTION ); ?>[nested]" value="1" <?php checked( $settings['nested'] ); ?> />
-							<?php esc_html_e( 'Show files from subfolders in parent folders by default', 'isudev-media-directory' ); ?>
-						</label>
-						<p class="description"><?php esc_html_e( 'Everyone can still switch this with the toggle above the folder tree. Their choice is remembered.', 'isudev-media-directory' ); ?></p>
-					</td>
-				</tr>
-			</table>
-			<?php submit_button(); ?>
-		</form>
+		<nav class="nav-tab-wrapper">
+			<?php foreach ( $tabs as $key => $label ) : ?>
+				<a href="<?php echo esc_url( tab_url( $key ) ); ?>" class="nav-tab<?php echo $key === $tab ? ' nav-tab-active' : ''; ?>"<?php echo $key === $tab ? ' aria-current="page"' : ''; ?>><?php echo esc_html( $label ); ?></a>
+			<?php endforeach; ?>
+		</nav>
 
-		<h2><?php esc_html_e( 'Import from HappyFiles', 'isudev-media-directory' ); ?></h2>
-		<?php if ( ! $source['folders'] ) : ?>
-			<p><?php esc_html_e( 'No HappyFiles folders found on this site.', 'isudev-media-directory' ); ?></p>
-		<?php else : ?>
-			<p>
-				<?php
-				printf(
-					/* translators: 1: number of folders, 2: number of folders already imported. */
-					esc_html__( 'Found %1$d HappyFiles folders, %2$d of them already imported.', 'isudev-media-directory' ),
-					(int) $source['folders'],
-					(int) $source['imported']
-				);
-				?>
-			</p>
-			<p class="description"><?php esc_html_e( 'Copies the folder tree and which file sits where. HappyFiles data is left untouched, and running it again only adds what is missing.', 'isudev-media-directory' ); ?></p>
-			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
-				<input type="hidden" name="action" value="isudev_media_directory_import" />
-				<?php wp_nonce_field( 'isudev_media_directory_import' ); ?>
-				<?php submit_button( __( 'Import folders', 'isudev-media-directory' ), 'secondary' ); ?>
-			</form>
-		<?php endif; ?>
+		<?php
+		if ( 'permissions' === $tab ) {
+			render_permissions();
+		} elseif ( 'import' === $tab ) {
+			render_import();
+		} else {
+			render_general();
+		}
+		?>
 	</div>
 	<?php
 }
 
 /**
- * Run the HappyFiles import from the settings page.
+ * General tab.
  *
  * @return void
  */
-function handle_import(): void {
+function render_general(): void {
+	$settings = get();
+	?>
+	<form method="post" action="options.php">
+		<?php settings_fields( PAGE ); ?>
+		<h2><?php esc_html_e( 'Defaults for everyone', 'isudev-media-directory' ); ?></h2>
+		<p><?php esc_html_e( 'How the folders behave for users who have not changed it themselves. Everyone can adjust these for their own account from the ⚙ menu above the folder tree.', 'isudev-media-directory' ); ?></p>
+		<table class="form-table" role="presentation">
+			<?php foreach ( preference_defs() as $key => $def ) : ?>
+				<tr>
+					<th scope="row"><?php echo esc_html( $def['label'] ); ?></th>
+					<td>
+						<label>
+							<input type="checkbox" name="<?php echo esc_attr( OPTION . '[' . $key . ']' ); ?>" value="1" <?php checked( $settings[ $key ] ); ?> />
+							<?php esc_html_e( 'On', 'isudev-media-directory' ); ?>
+						</label>
+						<p class="description"><?php echo esc_html( $def['help'] ); ?></p>
+					</td>
+				</tr>
+			<?php endforeach; ?>
+		</table>
+		<?php submit_button(); ?>
+	</form>
+	<?php
+}
+
+/**
+ * Permissions tab: roles × actions.
+ *
+ * @return void
+ */
+function render_permissions(): void {
+	$matrix  = Permissions\matrix();
+	$roles   = Permissions\roles();
+	$actions = Permissions\actions();
+	?>
+	<p><?php esc_html_e( 'Choose what each role can do with folders. Only roles that can upload files are listed.', 'isudev-media-directory' ); ?></p>
+
+	<form method="post" action="options.php">
+		<?php settings_fields( PAGE . '-permissions' ); ?>
+		<table class="widefat striped imd-permissions" role="presentation">
+			<thead>
+				<tr>
+					<th scope="col"><?php esc_html_e( 'Role', 'isudev-media-directory' ); ?></th>
+					<?php foreach ( $actions as $action ) : ?>
+						<th scope="col">
+							<?php echo esc_html( $action['label'] ); ?>
+							<span class="description" style="display:block;font-weight:400"><?php echo esc_html( $action['help'] ); ?></span>
+						</th>
+					<?php endforeach; ?>
+				</tr>
+			</thead>
+			<tbody>
+				<?php foreach ( $roles as $role => $name ) : ?>
+					<?php $locked = 'administrator' === $role; ?>
+					<tr>
+						<th scope="row"><?php echo esc_html( $name ); ?></th>
+						<?php foreach ( $actions as $cap => $action ) : ?>
+							<td>
+								<label>
+									<span class="screen-reader-text"><?php echo esc_html( $name . ': ' . $action['label'] ); ?></span>
+									<input
+										type="checkbox"
+										name="<?php echo esc_attr( Permissions\OPTION . '[' . $role . '][' . $cap . ']' ); ?>"
+										value="1"
+										<?php checked( ! empty( $matrix[ $role ][ $cap ] ) ); ?>
+										<?php disabled( $locked ); ?>
+									/>
+								</label>
+								<?php if ( $locked ) : ?>
+									<input type="hidden" name="<?php echo esc_attr( Permissions\OPTION . '[' . $role . '][' . $cap . ']' ); ?>" value="1" />
+								<?php endif; ?>
+							</td>
+						<?php endforeach; ?>
+					</tr>
+				<?php endforeach; ?>
+			</tbody>
+		</table>
+		<p class="description">
+			<?php esc_html_e( 'Administrators can always do everything. Organizing, creating or deleting includes seeing folders. Empty folders can be deleted by anyone who can create them, so a new folder can be undone. Permanently deleting files still follows WordPress’ own rules.', 'isudev-media-directory' ); ?>
+		</p>
+		<?php submit_button(); ?>
+	</form>
+	<?php
+}
+
+/**
+ * Import tab: one block per plugin with folders, a short list for the rest.
+ *
+ * @return void
+ */
+function render_import(): void {
+	$with_data = array();
+	$empty     = array();
+
+	foreach ( Import\sources() as $source ) {
+		$preview = Import\preview( $source );
+
+		if ( $preview['folders'] ) {
+			$with_data[] = array( $source, $preview );
+		} else {
+			$empty[] = $source->name();
+		}
+	}
+	?>
+	<p><?php esc_html_e( 'Copy folders and which file sits where from another media folder plugin. Its own data is not changed, and an import can be repeated: it only adds what is missing.', 'isudev-media-directory' ); ?></p>
+
+	<?php foreach ( $with_data as list( $source, $preview ) ) : ?>
+		<?php render_source( $source, $preview ); ?>
+	<?php endforeach; ?>
+
+	<?php if ( $empty ) : ?>
+		<h2><?php esc_html_e( 'Nothing to import from', 'isudev-media-directory' ); ?></h2>
+		<p><?php echo esc_html( implode( ', ', $empty ) ); ?></p>
+	<?php endif; ?>
+	<?php
+}
+
+/**
+ * One source block: preview, import form, cleanup form.
+ *
+ * @param Import\Source                                                         $source  Source.
+ * @param array{folders:int, files:int, imported:int, matches:int, active:bool} $preview Preview.
+ * @return void
+ */
+function render_source( Import\Source $source, array $preview ): void {
+	$slug   = $source->slug();
+	$action = admin_url( 'admin-post.php' );
+	?>
+	<div class="card" style="max-width:none">
+		<h2 class="title"><?php echo esc_html( $source->name() ); ?></h2>
+		<p>
+			<?php
+			echo esc_html(
+				sprintf(
+					/* translators: 1: number of folders, 2: number of files, 3: number of folders already imported. */
+					__( 'Folders: %1$d · Files in them: %2$d · Already imported: %3$d', 'isudev-media-directory' ),
+					$preview['folders'],
+					$preview['files'],
+					$preview['imported']
+				)
+			);
+			?>
+			<?php if ( $preview['active'] ) : ?>
+				<br /><strong><?php esc_html_e( 'The plugin is still active.', 'isudev-media-directory' ); ?></strong>
+			<?php endif; ?>
+		</p>
+
+		<form method="post" action="<?php echo esc_url( $action ); ?>">
+			<input type="hidden" name="action" value="isudev_media_directory_import" />
+			<input type="hidden" name="source" value="<?php echo esc_attr( $slug ); ?>" />
+			<?php wp_nonce_field( 'isudev_media_directory_import_' . $slug ); ?>
+			<fieldset>
+				<legend class="screen-reader-text"><?php esc_html_e( 'Where to put the folders', 'isudev-media-directory' ); ?></legend>
+				<p>
+					<label>
+						<input type="radio" name="mode" value="<?php echo esc_attr( Import\MODE_MERGE ); ?>" checked />
+						<?php esc_html_e( 'Merge with my folders', 'isudev-media-directory' ); ?>
+					</label>
+					<span class="description">
+						<?php
+						if ( $preview['matches'] ) {
+							echo esc_html(
+								sprintf(
+									/* translators: %d: number of folders. */
+									_n( '%d top-level folder has the same name as one of yours and will be combined with it.', '%d top-level folders have the same name as yours and will be combined with them.', $preview['matches'], 'isudev-media-directory' ),
+									$preview['matches']
+								)
+							);
+						} else {
+							esc_html_e( 'Folders with the same name in the same place are combined.', 'isudev-media-directory' );
+						}
+						?>
+					</span>
+				</p>
+				<p>
+					<label>
+						<input type="radio" name="mode" value="<?php echo esc_attr( Import\MODE_SEPARATE ); ?>" />
+						<?php
+						echo esc_html(
+							sprintf(
+								/* translators: %s: plugin name. */
+								__( 'Put everything in a new folder “%s”', 'isudev-media-directory' ),
+								$source->name()
+							)
+						);
+						?>
+					</label>
+				</p>
+			</fieldset>
+			<?php if ( 'happyfiles' === $slug ) : ?>
+				<p>
+					<label>
+						<input type="checkbox" name="permissions" value="1" checked />
+						<?php esc_html_e( 'Also copy HappyFiles folder access per role to Permissions', 'isudev-media-directory' ); ?>
+					</label>
+				</p>
+			<?php endif; ?>
+			<?php submit_button( __( 'Import folders', 'isudev-media-directory' ), 'primary', 'submit', false ); ?>
+		</form>
+
+		<hr />
+
+		<form method="post" action="<?php echo esc_url( $action ); ?>">
+			<input type="hidden" name="action" value="isudev_media_directory_cleanup" />
+			<input type="hidden" name="source" value="<?php echo esc_attr( $slug ); ?>" />
+			<?php wp_nonce_field( 'isudev_media_directory_cleanup_' . $slug ); ?>
+			<p class="description">
+				<?php
+				echo esc_html(
+					sprintf(
+						/* translators: %s: plugin name. */
+						__( 'After importing you can delete %s’s folder data from the database. Files stay in the library; only that plugin’s folders and assignments are removed. This cannot be undone.', 'isudev-media-directory' ),
+						$source->name()
+					)
+				);
+				?>
+			</p>
+			<?php if ( $preview['active'] ) : ?>
+				<p>
+					<?php
+					echo esc_html(
+						sprintf(
+							/* translators: %s: plugin name. */
+							__( 'Deactivate %s first.', 'isudev-media-directory' ),
+							$source->name()
+						)
+					);
+					?>
+				</p>
+			<?php else : ?>
+				<p>
+					<label>
+						<input type="checkbox" name="confirm" value="1" required />
+						<?php esc_html_e( 'I understand this cannot be undone', 'isudev-media-directory' ); ?>
+					</label>
+				</p>
+				<?php
+				submit_button(
+					sprintf(
+						/* translators: %s: plugin name. */
+						__( 'Delete %s folder data', 'isudev-media-directory' ),
+						$source->name()
+					),
+					'delete',
+					'submit',
+					false
+				);
+				?>
+			<?php endif; ?>
+		</form>
+	</div>
+	<?php
+}
+
+/**
+ * The source named in the request, after capability and nonce checks.
+ *
+ * @param string $nonce_action Nonce action prefix.
+ * @return Import\Source
+ */
+function requested_source( string $nonce_action ): Import\Source {
 	if ( ! current_user_can( 'manage_options' ) ) {
 		wp_die( esc_html__( 'Sorry, you are not allowed to do that.', 'isudev-media-directory' ), 403 );
 	}
 
-	check_admin_referer( 'isudev_media_directory_import' );
+	$slug = isset( $_POST['source'] ) ? sanitize_key( wp_unslash( $_POST['source'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verified next.
 
-	$result = Import\happyfiles();
+	check_admin_referer( $nonce_action . $slug );
 
-	wp_safe_redirect(
-		add_query_arg(
-			array(
-				'page'         => PAGE,
-				'imd_imported' => $result['folders'],
-				'imd_filed'    => $result['files'],
-			),
-			admin_url( 'upload.php' )
-		)
+	$source = Import\source( $slug );
+
+	if ( ! $source ) {
+		wp_die( esc_html__( 'Unknown import source.', 'isudev-media-directory' ), 400 );
+	}
+
+	return $source;
+}
+
+/**
+ * Run an import from the settings page.
+ *
+ * @return void
+ */
+function handle_import(): void {
+	$source = requested_source( 'isudev_media_directory_import_' );
+
+	// phpcs:disable WordPress.Security.NonceVerification.Missing -- Verified in requested_source().
+	$mode        = isset( $_POST['mode'] ) && Import\MODE_SEPARATE === $_POST['mode'] ? Import\MODE_SEPARATE : Import\MODE_MERGE;
+	$permissions = 'happyfiles' === $source->slug() && ! empty( $_POST['permissions'] );
+	// phpcs:enable
+
+	$result  = Import\run( $source, $mode );
+	$message = sprintf(
+		/* translators: 1: plugin name, 2: folders created, 3: folders reused, 4: files filed. */
+		__( 'Imported from %1$s. Folders created: %2$d · Existing folders reused: %3$d · Files filed: %4$d.', 'isudev-media-directory' ),
+		$source->name(),
+		$result['created'],
+		$result['reused'],
+		$result['files']
 	);
+
+	if ( $permissions ) {
+		$access   = Import\happyfiles_permissions();
+		$message .= ' ' . sprintf(
+			/* translators: %d: number of roles. */
+			_n( 'Folder access copied for %d role.', 'Folder access copied for %d roles.', $access['roles'], 'isudev-media-directory' ),
+			$access['roles']
+		);
+
+		if ( $access['users'] ) {
+			$message .= ' ' . sprintf(
+				/* translators: %d: number of users. */
+				_n( '%d user had personal HappyFiles access; personal settings are not supported, so they now follow their role.', '%d users had personal HappyFiles access; personal settings are not supported, so they now follow their role.', $access['users'], 'isudev-media-directory' ),
+				$access['users']
+			);
+		}
+	}
+
+	flash( 'success', $message );
+	wp_safe_redirect( tab_url( 'import' ) );
+	exit;
+}
+
+/**
+ * Delete a source's data from the settings page.
+ *
+ * @return void
+ */
+function handle_cleanup(): void {
+	$source = requested_source( 'isudev_media_directory_cleanup_' );
+
+	// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verified in requested_source().
+	if ( empty( $_POST['confirm'] ) ) {
+		flash( 'error', __( 'Nothing was deleted: please tick the confirmation box.', 'isudev-media-directory' ) );
+	} else {
+		$result = Import\cleanup( $source );
+
+		if ( is_wp_error( $result ) ) {
+			flash( 'error', $result->get_error_message() );
+		} else {
+			flash(
+				'success',
+				sprintf(
+					/* translators: %s: plugin name. */
+					__( '%s folder data deleted.', 'isudev-media-directory' ),
+					$source->name()
+				)
+			);
+		}
+	}
+
+	wp_safe_redirect( tab_url( 'import' ) );
 	exit;
 }

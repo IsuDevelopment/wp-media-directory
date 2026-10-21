@@ -156,6 +156,21 @@ function update( int $id, array $fields ): void {
 }
 
 /**
+ * Remember where a folder was imported from, unless it already says so.
+ *
+ * @param int    $id  Folder ID.
+ * @param string $ref `<source>:<source id>`.
+ * @return void
+ */
+function set_ref( int $id, string $ref ): void {
+	global $wpdb;
+
+	$table = Schema\folders_table();
+
+	$wpdb->query( $wpdb->prepare( "UPDATE {$table} SET import_ref = %s WHERE id = %d AND import_ref = ''", $ref, $id ) );
+}
+
+/**
  * Delete a folder with its subfolders. Files are kept, only unfiled.
  *
  * @param int $id Folder ID.

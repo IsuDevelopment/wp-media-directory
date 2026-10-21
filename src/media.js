@@ -11,6 +11,7 @@ import ContentHeader from './components/content-header';
 import {
 	ALL,
 	UNASSIGNED,
+	can,
 	config,
 	getFolder,
 	getLastFolder,
@@ -432,7 +433,7 @@ function browserFor( element ) {
 document.addEventListener( 'mouseover', ( event ) => {
 	const tile = event.target.closest?.( '.imd-has-folders li.attachment' );
 
-	if ( tile && ! tile.draggable ) {
+	if ( tile && ! tile.draggable && can.organize ) {
 		tile.draggable = true;
 	}
 } );
@@ -441,7 +442,7 @@ document.addEventListener( 'dragstart', ( event ) => {
 	const tile = event.target.closest?.( '.imd-has-folders li.attachment' );
 	const browser = tile && browserFor( tile );
 
-	if ( ! browser ) {
+	if ( ! browser || ! can.organize ) {
 		return;
 	}
 

@@ -14,6 +14,7 @@ declare( strict_types = 1 );
 namespace IsuDevMediaDirectory\Query;
 
 use IsuDevMediaDirectory\Folders;
+use IsuDevMediaDirectory\Permissions;
 use IsuDevMediaDirectory\Schema;
 use IsuDevMediaDirectory\Settings;
 use WP_Query;
@@ -61,7 +62,7 @@ function ajax_args( array $args ): array {
 	// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Core checked capability; this only narrows a read.
 	$query = isset( $_REQUEST['query'] ) && is_array( $_REQUEST['query'] ) ? map_deep( wp_unslash( $_REQUEST['query'] ), 'sanitize_text_field' ) : array();
 
-	if ( isset( $query[ FOLDER_VAR ] ) ) {
+	if ( isset( $query[ FOLDER_VAR ] ) && Permissions\can( Permissions\VIEW ) ) {
 		$args[ FOLDER_VAR ] = parse_folder( $query[ FOLDER_VAR ] );
 		$args[ NESTED_VAR ] = isset( $query[ NESTED_VAR ] ) ? rest_sanitize_boolean( $query[ NESTED_VAR ] ) : Settings\nested_for_user();
 	}
@@ -83,7 +84,7 @@ function list_view( WP_Query $query ): void {
 	}
 
 	// phpcs:disable WordPress.Security.NonceVerification.Recommended -- Read-only filter.
-	if ( isset( $_GET[ FOLDER_VAR ] ) ) {
+	if ( isset( $_GET[ FOLDER_VAR ] ) && Permissions\can( Permissions\VIEW ) ) {
 		$query->set( FOLDER_VAR, parse_folder( sanitize_key( wp_unslash( $_GET[ FOLDER_VAR ] ) ) ) );
 		$query->set( NESTED_VAR, isset( $_GET[ NESTED_VAR ] ) ? rest_sanitize_boolean( wp_unslash( $_GET[ NESTED_VAR ] ) ) : Settings\nested_for_user() );
 	}

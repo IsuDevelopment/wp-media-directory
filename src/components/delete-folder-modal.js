@@ -6,6 +6,7 @@ import { useState } from '@wordpress/element';
 import { __, _n, sprintf } from '@wordpress/i18n';
 
 import {
+	can,
 	deleteFolder,
 	getChildren,
 	getFolder,
@@ -64,7 +65,7 @@ export default function DeleteFolderModal( { folder, onClose } ) {
 		.filter( Boolean )
 		.join( ', ' );
 
-	const options = [
+	const allOptions = [
 		{
 			value: 'parent',
 			label: parent
@@ -93,6 +94,11 @@ export default function DeleteFolderModal( { folder, onClose } ) {
 			),
 		},
 	];
+
+	// Without the right to delete files, that option is not offered at all.
+	const options = allOptions.filter(
+		( option ) => option.value !== 'delete' || can.deleteFiles
+	);
 
 	function submit() {
 		setBusy( true );

@@ -10,6 +10,7 @@ declare( strict_types = 1 );
 namespace IsuDevMediaDirectory\Admin;
 
 use IsuDevMediaDirectory\Folders;
+use IsuDevMediaDirectory\Permissions;
 use IsuDevMediaDirectory\Query;
 use IsuDevMediaDirectory\REST;
 use IsuDevMediaDirectory\Settings;
@@ -56,7 +57,7 @@ function enqueue_library( string $hook_suffix ): void {
 function enqueue(): void {
 	static $done = false;
 
-	if ( $done || ! current_user_can( 'upload_files' ) ) {
+	if ( $done || ! current_user_can( 'upload_files' ) || ! Permissions\can( Permissions\VIEW ) ) {
 		return;
 	}
 
@@ -83,6 +84,8 @@ function enqueue(): void {
 				'namespace'  => REST\NAMESPACE_V1,
 				'tree'       => Folders\tree(),
 				'nested'     => Settings\nested_for_user(),
+				'prefs'      => Settings\prefs_for_js( Settings\prefs_for_user() ),
+				'can'        => Permissions\for_js(),
 				'view'       => $is_library ? ( 'list' === $mode ? 'list' : 'grid' ) : 'modal',
 				'folder'     => $folder,
 				'folderVar'  => Query\FOLDER_VAR,
@@ -121,7 +124,7 @@ function file_upload( int $attachment_id ): void {
 	// phpcs:ignore WordPress.Security.NonceVerification.Missing -- async-upload.php verified its own nonce.
 	$folder = isset( $_POST[ Query\FOLDER_VAR ] ) ? absint( $_POST[ Query\FOLDER_VAR ] ) : 0;
 
-	if ( $folder && Folders\exists( $folder ) && current_user_can( 'upload_files' ) ) {
+	if ( $folder && Folders\exists( $folder ) && current_user_can( 'upload_files' ) && Permissions\can( Permissions\ORGANIZE ) ) {
 		Folders\insert_items( array( array( $folder, $attachment_id ) ) );
 	}
 }

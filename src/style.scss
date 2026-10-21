@@ -34,6 +34,7 @@ $theme-tint: color-mix(in srgb, var(--wp-admin-theme-color, #3858e9) 8%, transpa
 }
 
 .imd-panel__title {
+	flex: 1;
 	margin: 0;
 	font-size: 11px;
 	font-weight: 500;
@@ -698,4 +699,30 @@ body.imd-is-dragging .uploader-editor {
 	justify-content: flex-end;
 	gap: 8px;
 	margin-top: 24px;
+}
+
+/* -------------------------------------------------------------------------
+ * Tiles: new folder, inline rename, context menu.
+ * ---------------------------------------------------------------------- */
+
+.imd-tile.is-editing {
+	cursor: default;
+
+	.imd-name-input {
+		flex: 1;
+	}
+}
+
+.imd-tile--new {
+	border-style: dashed;
+	color: $muted;
+
+	&:hover,
+	&:focus-visible {
+		color: $theme;
+	}
+
+	.imd-tile__name {
+		font-weight: 400;
+	}
 }

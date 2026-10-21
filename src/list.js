@@ -8,7 +8,14 @@ import { createRoot } from '@wordpress/element';
 
 import Sidebar from './components/sidebar';
 import ContentHeader from './components/content-header';
-import { ALL, config, getState, isVisibleIn, normalizeFolder } from './store';
+import {
+	ALL,
+	can,
+	config,
+	getState,
+	isVisibleIn,
+	normalizeFolder,
+} from './store';
 import { createView, folderProps } from './view';
 import { startFiles } from './drag';
 import fitPanel from './fit-panel';
@@ -122,7 +129,7 @@ export default function bootList() {
 
 	// Drag rows; checked rows travel together.
 	form.querySelectorAll( '#the-list tr[id^="post-"]' ).forEach( ( row ) => {
-		row.draggable = true;
+		row.draggable = can.organize;
 	} );
 
 	form.addEventListener( 'dragstart', ( event ) => {

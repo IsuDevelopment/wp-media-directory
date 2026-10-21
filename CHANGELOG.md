@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.2.0 — 2026-10-21
+
+- Permissions: a role × action matrix (see, organize files, create and rename,
+  delete folders) in Media → Folder settings → Permissions, enforced on the
+  server; the folder UI hides what a user may not do.
+- Import from FileBird, Real Media Library, Folders (Premio), Enhanced Media
+  Library, WP Media Folder and Wicked Folders, next to HappyFiles.
+- Import preview, merge-or-separate mode, HappyFiles folder access → Permissions,
+  and deleting the old plugin's folder data afterwards.
+- Notice while another folder plugin is active, with import and deactivate buttons.
+- WP-CLI: `sources`, `import <source>`, `cleanup <source>`, `permissions`.
+- ⚙ View options per user (site defaults in Folder settings → General): show
+  subfolders above the files, open the current folder in the tree, remember the
+  last folder per content type (opt-in).
+- Subfolder tiles: a "New folder" tile, right-click to rename or delete; no
+  tiles on "All files".
+- German and Norwegian (Bokmål) translations.
+
 ## 0.1.0 — 2026-10-19
 
 First version.

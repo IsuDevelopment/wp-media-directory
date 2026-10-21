@@ -17,7 +17,18 @@ Simple folders for the WordPress Media Library — built to replace HappyFiles P
 - Right-click a folder for New subfolder / Rename / Delete. Deleting a folder
   asks what to do with its files: move them up, move them to another folder, or
   delete them.
-- English and Polish.
+- Permissions per role: who can see, organize, create and delete folders.
+- Import from HappyFiles, FileBird, Real Media Library, Folders, Enhanced Media
+  Library, WP Media Folder and Wicked Folders.
+- **Remembers where you were.** The last open folder, the "Show files from
+  subfolders" switch and which branches of the tree are open are remembered,
+  so the Media Library and every "Add media" dialog (e.g. a featured image in a
+  post) open where you left off. Optionally per content type — one folder for
+  products, another for posts.
+- **⚙ View options** above the tree, per user: show subfolders as tiles above
+  the files (with a "New folder" tile; right-click a tile to rename or delete),
+  open the current folder in the tree, remember the folder per content type.
+- English, Polish, German and Norwegian (Bokmål).
 
 Requires WordPress 7.0+ and PHP 7.4+. Folders are virtual: files never move on
 disk and their URLs never change.
@@ -26,17 +37,39 @@ disk and their URLs never change.
 
 Media → **Folder settings**
 
-- **Subfolders** — whether "Show files from subfolders" starts on for users who
-  have not touched the switch yet.
-- **Import from HappyFiles** — copies the HappyFiles folder tree and which file
-  sits where. HappyFiles data is not changed; running it again only adds what is
-  missing. Works with HappyFiles deactivated.
+Only administrators (`manage_options`) can open this page.
+
+- **General** — defaults for everyone: show files from subfolders, show
+  subfolders above the files, open the current folder in the tree, remember the
+  folder per content type (off by default). Each user can change these for
+  themselves in the ⚙ menu above the folder tree; their choice wins.
+- **Permissions** — per role (roles that can upload files):
+  *See folders*, *Organize files* (move files, upload into a folder),
+  *Create and rename* (also move folders), *Delete folders*. Administrators
+  always have everything; by default editors have everything, authors all but
+  deleting, other roles see and organize. Empty folders can be deleted by
+  anyone who can create them. Role editor plugins (Members, User Role Editor)
+  can grant or deny the capabilities `imd_view_folders`, `imd_organize_files`,
+  `imd_manage_folders`, `imd_delete_folders` to single users.
+- **Import** — copy folders and file assignments from HappyFiles, FileBird,
+  Real Media Library, Folders (Premio), Enhanced Media Library, WP Media Folder
+  or Wicked Folders. Works with that plugin deactivated and never changes its
+  data. Choose *Merge with my folders* (same name in the same place = one
+  folder) or *Put everything in a new folder*. From HappyFiles you can also copy
+  folder access per role. Imports can be repeated; they only add what is
+  missing. Afterwards, with the other plugin deactivated, you can delete its
+  folder data. While such a plugin is active, a notice offers to import and
+  deactivate it.
 
 ## WP-CLI
 
 ```bash
-wp media-directory import-happyfiles   # same as the settings button
-wp media-directory list                # folders with direct and total counts
+wp media-directory list                          # folders with direct and total counts
+wp media-directory sources                       # plugins to import from, with counts
+wp media-directory import happyfiles --permissions
+wp media-directory import filebird --mode=separate
+wp media-directory cleanup filebird --yes        # delete FileBird's folder data
+wp media-directory permissions                   # the role matrix
 ```
 
 ## Installing and updating

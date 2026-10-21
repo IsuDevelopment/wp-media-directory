@@ -9,7 +9,7 @@ import {
 } from '@wordpress/element';
 import { SVG, Path } from '@wordpress/primitives';
 
-import { getState, subscribe, fileItems, moveFolder } from '../store';
+import { can, getState, subscribe, fileItems, moveFolder } from '../store';
 import { getPayload, isOurDrag, end } from '../drag';
 
 export function useStore() {
@@ -62,10 +62,11 @@ export function useDropTarget( { folder, folderDrop, onHover } ) {
 		}
 
 		if ( payload.type === 'files' ) {
-			return folder !== null && folder !== undefined;
+			return can.organize && folder !== null && folder !== undefined;
 		}
 
 		return (
+			can.manage &&
 			folderDrop !== null &&
 			folderDrop !== undefined &&
 			payload.id !== folderDrop

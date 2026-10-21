@@ -8,6 +8,7 @@ import {
 	UNASSIGNED,
 	getState,
 	normalizeFolder,
+	reveal,
 	rememberFolder,
 	registerView,
 } from './store';
@@ -37,6 +38,17 @@ export function setActiveView( view ) {
  * @param {Object}   args.handlers onNestedChange / onFiled / onFoldersRemoved / onTreeMoved.
  * @return {Object} View.
  */
+/**
+ * Expand the tree down to a folder, when the user wants that.
+ *
+ * @param {number|string|null} folder Folder.
+ */
+function revealIfWanted( folder ) {
+	if ( typeof folder === 'number' && getState().prefs.reveal ) {
+		reveal( folder );
+	}
+}
+
 export function createView( { kind, initial, onChange, handlers = {} } ) {
 	let folder = normalizeFolder( initial );
 	// What the file grid shows right now. Lags `folder` while the next page
@@ -68,6 +80,7 @@ export function createView( { kind, initial, onChange, handlers = {} } ) {
 
 			folder = next;
 			rememberFolder( folder );
+			revealIfWanted( folder );
 			notify();
 			onChange( folder );
 		},
@@ -76,6 +89,7 @@ export function createView( { kind, initial, onChange, handlers = {} } ) {
 		},
 	};
 
+	revealIfWanted( folder );
 	view.unregister = registerView( view );
 	active = view;
 
