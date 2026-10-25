@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.4.0 — 2026-10-26
+
+- Download a folder: right-click a folder (or ⋮) → Download gives a ZIP named
+  after the folder with its original files; subfolders become folders in the
+  ZIP.
+- Folder colors: right-click a folder (or ⋮) → Change color. Pick a preset,
+  any custom color or Clear; Undo works as usual. HappyFiles and FileBird
+  imports bring their folder colors along.
+- Hide the folder panel with the button at the right of its toolbar; “Show
+  folders” before the breadcrumb brings it back. Remembered in the browser,
+  applies to the Media Library, list view and media dialogs.
+- Files uploaded or dropped while a folder is open now appear in it right
+  away, with upload progress, instead of only after a page reload.
+
 ## 0.3.0 — 2026-10-21
 
 - List view: switching folders or the subfolder switch no longer reloads and

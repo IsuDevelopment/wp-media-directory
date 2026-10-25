@@ -13,7 +13,7 @@ import {
 } from '@wordpress/components';
 import { useState, useSyncExternalStore } from '@wordpress/element';
 import { __, _n, sprintf } from '@wordpress/i18n';
-import { plus } from '@wordpress/icons';
+import { chevronRightSmall, drawerLeft, plus } from '@wordpress/icons';
 import clsx from 'clsx';
 
 import {
@@ -21,16 +21,21 @@ import {
 	UNASSIGNED,
 	can,
 	canDeleteFolder,
+	config,
 	createFolder,
+	downloadFolder,
 	getChildren,
 	getFolder,
 	getPath,
 	removeFolder,
 	renameFolder,
 	setNested,
+	setPanelHidden,
 	setPref,
 } from '../store';
+import FolderColorPopover from './folder-color';
 import {
+	FolderIcon,
 	NameInput,
 	folderIcon,
 	nestedIcon,
@@ -73,9 +78,10 @@ function Crumb( { folder, label, onSelect, isCurrent } ) {
  * @param {Object}   props.folder   Folder.
  * @param {Object}   props.anchor   Virtual anchor at the pointer.
  * @param {Function} props.onRename Start renaming.
+ * @param {Function} props.onColor  Open the colour picker.
  * @param {Function} props.onClose  Close the menu.
  */
-function TileMenu( { folder, anchor, onRename, onClose } ) {
+function TileMenu( { folder, anchor, onRename, onColor, onClose } ) {
 	return (
 		<Popover
 			anchor={ anchor }
@@ -94,6 +100,28 @@ function TileMenu( { folder, anchor, onRename, onClose } ) {
 							} }
 						>
 							{ __( 'Rename', 'isudev-media-directory' ) }
+						</MenuItem>
+					) }
+					{ can.manage && (
+						<MenuItem
+							icon={ chevronRightSmall }
+							iconPosition="right"
+							onClick={ () => {
+								onClose();
+								onColor();
+							} }
+						>
+							{ __( 'Change color', 'isudev-media-directory' ) }
+						</MenuItem>
+					) }
+					{ !! config.download && folder.total > 0 && (
+						<MenuItem
+							onClick={ () => {
+								onClose();
+								downloadFolder( folder.id );
+							} }
+						>
+							{ __( 'Download', 'isudev-media-directory' ) }
 						</MenuItem>
 					) }
 					{ canDeleteFolder( folder ) && (
@@ -147,7 +175,11 @@ function Tile( { folder, nested, onSelect } ) {
 	} );
 	const [ editing, setEditing ] = useState( false );
 	const [ menu, setMenu ] = useState( null );
-	const hasMenu = can.manage || canDeleteFolder( folder );
+	const [ coloring, setColoring ] = useState( null );
+	const hasMenu =
+		can.manage ||
+		canDeleteFolder( folder ) ||
+		( !! config.download && folder.total > 0 );
 
 	function openMenu( event ) {
 		event.preventDefault();
@@ -167,7 +199,9 @@ function Tile( { folder, nested, onSelect } ) {
 		return (
 			<li>
 				<div className="imd-tile is-editing">
-					<span className="imd-tile__icon">{ folderIcon }</span>
+					<span className="imd-tile__icon">
+						<FolderIcon color={ folder.color } />
+					</span>
 					<NameInput
 						value={ folder.name }
 						label={ __( 'Folder name', 'isudev-media-directory' ) }
@@ -197,7 +231,9 @@ function Tile( { folder, nested, onSelect } ) {
 				} }
 				{ ...dropProps }
 			>
-				<span className="imd-tile__icon">{ folderIcon }</span>
+				<span className="imd-tile__icon">
+					<FolderIcon color={ folder.color } />
+				</span>
 				<span className="imd-tile__text">
 					<span className="imd-tile__name">{ folder.name }</span>
 					<span className="imd-tile__meta">
@@ -210,7 +246,16 @@ function Tile( { folder, nested, onSelect } ) {
 					folder={ folder }
 					anchor={ menu }
 					onRename={ () => setEditing( true ) }
+					onColor={ () => setColoring( menu ) }
 					onClose={ () => setMenu( null ) }
+				/>
+			) }
+			{ coloring && (
+				<FolderColorPopover
+					id={ folder.id }
+					anchor={ coloring }
+					placement="bottom-start"
+					onClose={ () => setColoring( null ) }
 				/>
 			) }
 		</li>
@@ -328,7 +373,7 @@ function HeaderActions( { folder, nested, tiles } ) {
 
 export default function ContentHeader( { view } ) {
 	// Re-render on tree changes; folder and nested follow what the grid shows.
-	const { prefs } = useStore();
+	const { prefs, panelHidden } = useStore();
 	const { folder: current, nested } = useSyncExternalStore(
 		view.subscribe,
 		view.getShown
@@ -341,13 +386,29 @@ export default function ContentHeader( { view } ) {
 	// Experiment: header buttons in the library grid only (see HeaderActions).
 	const withActions = view.kind === 'grid' && !! folder;
 
-	if ( current === ALL ) {
+	if ( current === ALL && ! panelHidden ) {
 		return null;
 	}
 
 	return (
 		<div className="imd-content-header">
 			<div className="imd-content-header__bar">
+				{ panelHidden && (
+					<Button
+						className="imd-show-panel"
+						icon={ drawerLeft }
+						size="compact"
+						label={ __( 'Show folders', 'isudev-media-directory' ) }
+						onClick={ () => setPanelHidden( false ) }
+					/>
+				) }
+				{ current === ALL && (
+					<span className="imd-crumbs">
+						<span className="imd-crumbs__current">
+							{ __( 'All files', 'isudev-media-directory' ) }
+						</span>
+					</span>
+				) }
 				{ current !== ALL && (
 					<nav
 						className="imd-crumbs"

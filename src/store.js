@@ -11,6 +11,7 @@ import { __, _n, sprintf } from '@wordpress/i18n';
 const config = window.isudevMediaDirectory;
 const LAST_FOLDER_KEY = 'imd:last-folder';
 const EXPANDED_KEY = 'imd:expanded';
+const PANEL_HIDDEN_KEY = 'imd:panel-hidden';
 
 export const ALL = null;
 
@@ -56,6 +57,7 @@ let state = {
 		...( config.prefs || {} ),
 	},
 	expanded: readStorage( EXPANDED_KEY, [] ),
+	panelHidden: !! readStorage( PANEL_HIDDEN_KEY, false ),
 	notices: [],
 	busy: false,
 	deleting: null,
@@ -265,6 +267,31 @@ export function setExpanded( id, expanded ) {
 
 	writeStorage( EXPANDED_KEY, next );
 	setState( { expanded: next } );
+}
+
+/**
+ * Hide or show the folder panel everywhere (grid, list, modals). The body
+ * class drives the layout in style.scss.
+ *
+ * @param {boolean} hidden Hidden.
+ */
+export function setPanelHidden( hidden ) {
+	writeStorage( PANEL_HIDDEN_KEY, hidden );
+	document.body.classList.toggle( 'imd-panel-hidden', hidden );
+	setState( { panelHidden: hidden } );
+}
+
+document.body.classList.toggle( 'imd-panel-hidden', state.panelHidden );
+
+/**
+ * Download a folder (with its subfolders) as a ZIP named after it.
+ *
+ * @param {number} id Folder ID.
+ */
+export function downloadFolder( id ) {
+	if ( config.download ) {
+		window.location.href = `${ config.download }&folder=${ id }`;
+	}
 }
 
 /**
@@ -496,6 +523,43 @@ export function renameFolder( id, name ) {
 				revert: () =>
 					request( `/folders/${ id }`, {
 						data: { name: previous.name },
+					} ).then( ( response ) =>
+						setState( { tree: response.tree } )
+					),
+			} );
+		} )
+		.catch( fail );
+}
+
+/**
+ * Give a folder a colour, or take it away.
+ *
+ * @param {number} id    Folder ID.
+ * @param {string} color `#rrggbb`, or '' for none.
+ * @return {Promise} Resolves when saved.
+ */
+export function setFolderColor( id, color = '' ) {
+	const folder = getFolder( id );
+
+	if ( ! folder || ( folder.color || '' ) === color ) {
+		return Promise.resolve();
+	}
+
+	return request( `/folders/${ id }`, { data: { color } } )
+		.then( ( { previous, tree } ) => {
+			setState( { tree } );
+			pushUndo( {
+				undone: sprintf(
+					/* translators: %s: folder name. */
+					__(
+						'Changed the color of “%s” back.',
+						'isudev-media-directory'
+					),
+					folder.name
+				),
+				revert: () =>
+					request( `/folders/${ id }`, {
+						data: { color: previous.color || '' },
 					} ).then( ( response ) =>
 						setState( { tree: response.tree } )
 					),

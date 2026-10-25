@@ -16,6 +16,8 @@ import {
 	chevronRight,
 	chevronUpDown,
 	cog,
+	drawerLeft,
+	chevronRightSmall,
 	moreVertical,
 	plus,
 } from '@wordpress/icons';
@@ -36,12 +38,16 @@ import {
 	canDeleteFolder,
 	setExpanded,
 	setNested,
+	setPanelHidden,
 	setPref,
+	downloadFolder,
 	expandAll,
 	collapseAll,
 } from '../store';
 import { startFolder } from '../drag';
+import FolderColorPopover from './folder-color';
 import {
+	FolderIcon,
 	NameInput,
 	allFilesIcon,
 	collapseAllIcon,
@@ -146,6 +152,8 @@ function FolderRow( {
 	// Right-click opens the same menu as the ⋮ button, at the pointer.
 	const [ menuOpen, setMenuOpen ] = useState( false );
 	const [ menuAnchor, setMenuAnchor ] = useState( null );
+	const [ coloring, setColoring ] = useState( false );
+	const rowRef = useRef();
 
 	function openContextMenu( event ) {
 		event.preventDefault();
@@ -166,7 +174,8 @@ function FolderRow( {
 	}
 
 	const mayDelete = canDeleteFolder( folder );
-	const hasMenu = can.manage || mayDelete;
+	const mayDownload = !! config.download && folder.total > 0;
+	const hasMenu = can.manage || mayDelete || mayDownload;
 
 	function remove() {
 		removeFolder( folder );
@@ -224,6 +233,7 @@ function FolderRow( {
 					'is-selected': selected,
 					'is-drop-target': isOver,
 				} ) }
+				ref={ rowRef }
 				style={ { '--imd-depth': depth } }
 				onContextMenu={ hasMenu ? openContextMenu : undefined }
 				{ ...dropProps }
@@ -248,7 +258,9 @@ function FolderRow( {
 
 				{ editing === folder.id ? (
 					<div className="imd-row__main is-editing">
-						<span className="imd-row__icon">{ folderIcon }</span>
+						<span className="imd-row__icon">
+							<FolderIcon color={ folder.color } />
+						</span>
 						<NameInput
 							value={ folder.name }
 							label={ __(
@@ -281,7 +293,9 @@ function FolderRow( {
 							.map( ( item ) => item.name )
 							.join( ' › ' ) }
 					>
-						<span className="imd-row__icon">{ folderIcon }</span>
+						<span className="imd-row__icon">
+							<FolderIcon color={ folder.color } />
+						</span>
 						<span className="imd-row__name">{ folder.name }</span>
 						<Count
 							value={ hiddenBelow && ! count ? '' : count }
@@ -357,6 +371,34 @@ function FolderRow( {
 												'isudev-media-directory'
 											) }
 										</MenuItem>
+										<MenuItem
+											icon={ chevronRightSmall }
+											iconPosition="right"
+											onClick={ () => {
+												onClose();
+												setColoring( true );
+											} }
+										>
+											{ __(
+												'Change color',
+												'isudev-media-directory'
+											) }
+										</MenuItem>
+									</MenuGroup>
+								) }
+								{ mayDownload && (
+									<MenuGroup>
+										<MenuItem
+											onClick={ () => {
+												onClose();
+												downloadFolder( folder.id );
+											} }
+										>
+											{ __(
+												'Download',
+												'isudev-media-directory'
+											) }
+										</MenuItem>
 									</MenuGroup>
 								) }
 								{ mayDelete && (
@@ -378,6 +420,16 @@ function FolderRow( {
 							</>
 						) }
 					</DropdownMenu>
+				) }
+				{ coloring && (
+					<FolderColorPopover
+						id={ folder.id }
+						anchor={ menuAnchor || rowRef.current }
+						placement={
+							menuAnchor ? 'bottom-start' : 'right-start'
+						}
+						onClose={ () => setColoring( false ) }
+					/>
 				) }
 			</div>
 
@@ -623,6 +675,12 @@ export default function Sidebar( { view } ) {
 						/>
 					) }
 					<ViewOptions prefs={ prefs } />
+					<Button
+						icon={ drawerLeft }
+						size="compact"
+						label={ __( 'Hide folders', 'isudev-media-directory' ) }
+						onClick={ () => setPanelHidden( true ) }
+					/>
 				</div>
 			</div>
 

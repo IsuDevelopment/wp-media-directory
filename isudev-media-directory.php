@@ -3,7 +3,7 @@
  * Plugin Name:       IsuDev Media Directory
  * Plugin URI:        https://github.com/IsuDevelopment/wp-media-directory
  * Description:       Simple folders for the Media Library. Files stay visible across the whole folder tree, moves can be undone, and the folders work in every media modal.
- * Version:           0.3.0
+ * Version:           0.4.0
  * Requires at least: 7.0
  * Requires PHP:      7.4
  * Author:            IsuDev
@@ -23,7 +23,7 @@ namespace IsuDevMediaDirectory;
 
 defined( 'ABSPATH' ) || exit;
 
-const VERSION = '0.3.0';
+const VERSION = '0.4.0';
 
 define( 'IsuDevMediaDirectory\\PATH', plugin_dir_path( __FILE__ ) );
 define( 'IsuDevMediaDirectory\\URL', plugin_dir_url( __FILE__ ) );
@@ -34,6 +34,7 @@ require_once PATH . 'includes/permissions.php';
 require_once PATH . 'includes/query.php';
 require_once PATH . 'includes/rest.php';
 require_once PATH . 'includes/admin.php';
+require_once PATH . 'includes/download.php';
 require_once PATH . 'includes/settings.php';
 require_once PATH . 'includes/import/class-source.php';
 require_once PATH . 'includes/import/class-taxonomy-source.php';
@@ -48,6 +49,7 @@ Permissions\boot();
 Query\boot();
 REST\boot();
 Admin\boot();
+Download\boot();
 Settings\boot();
 Import\boot();
 Updater\boot( __FILE__ );

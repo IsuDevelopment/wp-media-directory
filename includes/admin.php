@@ -9,6 +9,7 @@ declare( strict_types = 1 );
 
 namespace IsuDevMediaDirectory\Admin;
 
+use IsuDevMediaDirectory\Download;
 use IsuDevMediaDirectory\Folders;
 use IsuDevMediaDirectory\Permissions;
 use IsuDevMediaDirectory\Query;
@@ -105,6 +106,7 @@ function enqueue(): void {
 				'nestedVar'  => Query\NESTED_VAR,
 				'settings'   => current_user_can( 'manage_options' ) ? admin_url( 'upload.php?page=' . Settings\PAGE ) : '',
 				'libraryUrl' => admin_url( 'upload.php' ),
+				'download'   => Download\available() ? Download\base_url() : '',
 			)
 		) . ';',
 		'before'

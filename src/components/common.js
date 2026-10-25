@@ -20,11 +20,37 @@ export function useViewFolder( view ) {
 	return useSyncExternalStore( view.subscribe, view.getFolder );
 }
 
+const FOLDER_OUTLINE =
+	'M4.5 5.5h4.4l1.6 2h9a.5.5 0 0 1 .5.5v10a.5.5 0 0 1-.5.5h-15A.5.5 0 0 1 4 18V6a.5.5 0 0 1 .5-.5ZM3 6v12a1.5 1.5 0 0 0 1.5 1.5h15A1.5 1.5 0 0 0 21 18V8a1.5 1.5 0 0 0-1.5-1.5h-8.3l-1.6-2H4.5A1.5 1.5 0 0 0 3 6Z';
+
 export const folderIcon = (
 	<SVG xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-		<Path d="M4.5 5.5h4.4l1.6 2h9a.5.5 0 0 1 .5.5v10a.5.5 0 0 1-.5.5h-15A.5.5 0 0 1 4 18V6a.5.5 0 0 1 .5-.5ZM3 6v12a1.5 1.5 0 0 0 1.5 1.5h15A1.5 1.5 0 0 0 21 18V8a1.5 1.5 0 0 0-1.5-1.5h-8.3l-1.6-2H4.5A1.5 1.5 0 0 0 3 6Z" />
+		<Path d={ FOLDER_OUTLINE } />
 	</SVG>
 );
+
+/**
+ * A folder's icon: the outline in the text colour (dark, white when the row
+ * is selected), filled with the folder's colour when it has one.
+ *
+ * @param {Object} props
+ * @param {string} [props.color] Folder colour.
+ */
+export function FolderIcon( { color } ) {
+	if ( ! color ) {
+		return folderIcon;
+	}
+
+	return (
+		<SVG xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+			<Path
+				d="M4 6a.5.5 0 0 1 .5-.5h4.4l1.6 2h9a.5.5 0 0 1 .5.5v10a.5.5 0 0 1-.5.5h-15A.5.5 0 0 1 4 18V6Z"
+				style={ { fill: color } }
+			/>
+			<Path d={ FOLDER_OUTLINE } />
+		</SVG>
+	);
+}
 
 export const allFilesIcon = (
 	<SVG xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">

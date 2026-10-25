@@ -34,55 +34,57 @@ msgstr "Proste foldery w bibliotece mediów. Pliki są widoczne w całym drzewie
 msgid "IsuDev"
 msgstr "IsuDev"
 
-#: includes/rest.php:267
-#: includes/rest.php:309
+#: includes/rest.php:271
+#: includes/rest.php:314
 msgid "Folder name cannot be empty."
 msgstr "Nazwa folderu nie może być pusta."
 
-#: includes/rest.php:271
+#: includes/rest.php:275
 msgid "The parent folder no longer exists."
 msgstr "Folder nadrzędny już nie istnieje."
 
-#: includes/rest.php:295
-#: includes/rest.php:343
-#: includes/rest.php:458
+#: includes/download.php:89
+#: includes/rest.php:299
+#: includes/rest.php:356
+#: includes/rest.php:471
 msgid "Folder not found."
 msgstr "Nie znaleziono folderu."
 
-#: includes/rest.php:317
+#: includes/rest.php:322
 #: build/index.js:13
 msgid "A folder cannot be moved into itself."
 msgstr "Nie można przenieść folderu do niego samego."
 
-#: includes/rest.php:364
+#: includes/rest.php:377
 msgid "Choose a folder outside the one being deleted."
 msgstr "Wybierz folder spoza usuwanego folderu."
 
-#: includes/rest.php:370
+#: includes/rest.php:383
 msgid "You are not allowed to delete some of these files."
 msgstr "Nie masz uprawnień do usunięcia części tych plików."
 
-#: includes/rest.php:454
+#: includes/rest.php:467
 msgid "No files you can edit were selected."
 msgstr "Nie zaznaczono plików, które możesz edytować."
 
 #: includes/settings.php:164
 #: includes/settings.php:165
 #: includes/settings.php:336
-#: build/index.js:18
+#: build/index.js:19
 msgid "Folder settings"
 msgstr "Ustawienia folderów"
 
-#: build/index.js:20
 #: build/index.js:21
+#: build/index.js:22
 msgid "Subfolders"
 msgstr "Podfoldery"
 
-#: includes/import.php:378
+#: includes/import.php:379
 #: includes/settings.php:565
 msgid "Import folders"
 msgstr "Importuj foldery"
 
+#: includes/download.php:191
 #: includes/rest.php:78
 #: includes/settings.php:630
 msgid "Sorry, you are not allowed to do that."
@@ -132,8 +134,8 @@ msgstr "Przywrócono folder „%s”."
 
 #. translators: %d: number of files.
 #: build/index.js:9
-#: build/index.js:19
-#: build/index.js:22
+#: build/index.js:20
+#: build/index.js:23
 msgid "%d file"
 msgid_plural "%d files"
 msgstr[0] "%d plik"
@@ -187,16 +189,16 @@ msgstr "Przeniesiono „%s” na najwyższy poziom."
 msgid "Moved “%s” back."
 msgstr "Przeniesiono „%s” z powrotem."
 
-#: build/index.js:16
+#: build/index.js:17
 msgid "Collapse"
 msgstr "Zwiń"
 
-#: build/index.js:16
+#: build/index.js:17
 msgid "Expand"
 msgstr "Rozwiń"
 
-#: build/index.js:16
-#: build/index.js:20
+#: build/index.js:17
+#: build/index.js:21
 msgid "Folder name"
 msgstr "Nazwa folderu"
 
@@ -206,33 +208,33 @@ msgid "Renamed back to “%s”."
 msgstr "Przywrócono nazwę „%s”."
 
 #. translators: %d: number of files.
-#: build/index.js:17
+#: build/index.js:18
 msgid "%d file including subfolders"
 msgid_plural "%d files including subfolders"
 msgstr[0] "%d plik razem z podfolderami"
 msgstr[1] "%d pliki razem z podfolderami"
 msgstr[2] "%d plików razem z podfolderami"
 
-#: build/index.js:17
+#: build/index.js:18
 msgid "Folder actions"
 msgstr "Akcje folderu"
 
-#: build/index.js:17
+#: build/index.js:18
 msgid "New subfolder"
 msgstr "Nowy podfolder"
 
-#: build/index.js:17
 #: build/index.js:18
+#: build/index.js:19
 msgid "Rename"
 msgstr "Zmień nazwę"
 
-#: build/index.js:17
 #: build/index.js:18
+#: build/index.js:19
 msgid "Delete"
 msgstr "Usuń"
 
-#: build/index.js:17
-#: build/index.js:20
+#: build/index.js:18
+#: build/index.js:21
 msgid "New folder name"
 msgstr "Nazwa nowego folderu"
 
@@ -241,73 +243,73 @@ msgstr "Nazwa nowego folderu"
 msgid "Removed folder “%s”."
 msgstr "Usunięto folder „%s”."
 
-#: build/index.js:17
 #: build/index.js:18
+#: build/index.js:19
 msgid "Folders"
 msgstr "Foldery"
 
 #. translators: %s: folder name.
-#: build/index.js:18
+#: build/index.js:19
 msgid "New folder in “%s”"
 msgstr "Nowy folder w „%s”"
 
-#: build/index.js:18
-#: build/index.js:20
+#: build/index.js:19
+#: build/index.js:21
 msgid "New folder"
 msgstr "Nowy folder"
 
-#: build/index.js:17
+#: build/index.js:18
 msgid "Show files from subfolders"
 msgstr "Pokaż pliki z podfolderów"
 
-#: build/index.js:18
+#: build/index.js:19
 msgid "Search folders"
 msgstr "Szukaj folderów"
 
-#: build/index.js:18
-#: build/index.js:20
+#: build/index.js:19
+#: build/index.js:21
 msgid "All files"
 msgstr "Wszystkie pliki"
 
-#: build/index.js:18
-#: build/index.js:20
+#: build/index.js:19
+#: build/index.js:21
 msgid "Not in a folder"
 msgstr "Bez folderu"
 
-#: build/index.js:18
+#: build/index.js:19
 msgid "Create your first folder"
 msgstr "Utwórz pierwszy folder"
 
-#: build/index.js:18
+#: build/index.js:19
 msgid "No folders found."
 msgstr "Nie znaleziono folderów."
 
 #. translators: %d: number of folders.
-#: build/index.js:20
+#: build/index.js:21
 msgid "%d folder"
 msgid_plural "%d folders"
 msgstr[0] "%d folder"
 msgstr[1] "%d foldery"
 msgstr[2] "%d folderów"
 
-#: build/index.js:20
+#: build/index.js:21
 msgid "Folder path"
 msgstr "Ścieżka folderu"
 
 #. translators: %d: number of files.
-#: build/index.js:21
+#: build/index.js:22
 msgid "%d more file is in subfolders."
 msgid_plural "%d more files are in subfolders."
 msgstr[0] "Jeszcze %d plik jest w podfolderach."
 msgstr[1] "Jeszcze %d pliki są w podfolderach."
 msgstr[2] "Jeszcze %d plików jest w podfolderach."
 
-#: build/index.js:21
+#: build/index.js:22
 msgid "Show them here"
 msgstr "Pokaż je tutaj"
 
 #. translators: %d: number of folders.
-#: build/index.js:23
+#: build/index.js:24
 msgid "%d subfolder"
 msgid_plural "%d subfolders"
 msgstr[0] "%d podfolder"
@@ -315,61 +317,62 @@ msgstr[1] "%d podfoldery"
 msgstr[2] "%d podfolderów"
 
 #. translators: %s: parent folder name.
-#: build/index.js:24
+#: build/index.js:25
 msgid "Move them up to “%s”"
 msgstr "Przenieś je wyżej, do „%s”"
 
-#: build/index.js:24
+#: build/index.js:25
 msgid "Keep them in the library, without a folder"
 msgstr "Zostaw je w bibliotece, bez folderu"
 
-#: build/index.js:24
+#: build/index.js:25
 msgid "Move them to another folder"
 msgstr "Przenieś je do innego folderu"
 
-#: build/index.js:24
+#: build/index.js:25
 msgid "Delete the files permanently"
 msgstr "Usuń pliki na stałe"
 
 #. translators: %s: folder name.
-#: build/index.js:25
+#: build/index.js:26
 msgid "Delete “%s”?"
 msgstr "Usunąć „%s”?"
 
 #. translators: 1: folder name, 2: e.g. "12 files, 2 subfolders".
-#: build/index.js:26
+#: build/index.js:27
 msgid "“%1$s” holds %2$s. The folder and its subfolders will be removed. What should happen to the files?"
 msgstr "Folder „%1$s” zawiera: %2$s. Folder i jego podfoldery zostaną usunięte. Co zrobić z plikami?"
 
-#: build/index.js:26
+#: build/index.js:27
 msgid "Files"
 msgstr "Pliki"
 
-#: build/index.js:26
+#: includes/download.php:63
+#: build/index.js:27
 msgid "Folder"
 msgstr "Folder"
 
-#: build/index.js:26
+#: build/index.js:27
 msgid "— Choose a folder —"
 msgstr "— Wybierz folder —"
 
-#: build/index.js:26
+#: build/index.js:27
 msgid "The files are removed from the whole library, including other folders and any posts that use them. This cannot be undone."
 msgstr "Pliki zostaną usunięte z całej biblioteki, także z innych folderów i ze wszystkich wpisów, które ich używają. Tej operacji nie można cofnąć."
 
-#: build/index.js:26
+#: build/index.js:27
 msgid "Cancel"
 msgstr "Anuluj"
 
 #. translators: %d: number of files.
-#: build/index.js:27
+#: build/index.js:28
 msgid "Delete folder and %d file"
 msgid_plural "Delete folder and %d files"
 msgstr[0] "Usuń folder i %d plik"
 msgstr[1] "Usuń folder i %d pliki"
 msgstr[2] "Usuń folder i %d plików"
 
-#: build/index.js:27
+#: build/index.js:28
 msgid "Delete folder"
 msgstr "Usuń folder"
 
@@ -378,22 +381,22 @@ msgstr "Usuń folder"
 msgid "https://github.com/IsuDevelopment/wp-media-directory"
 msgstr "https://github.com/IsuDevelopment/wp-media-directory"
 
-#: includes/import.php:237
+#: includes/import.php:238
 msgid "Untitled folder"
 msgstr "Folder bez nazwy"
 
 #. translators: %s: plugin name.
-#: includes/import.php:337
+#: includes/import.php:338
 msgid "Deactivate %s before deleting its folder data."
 msgstr "Dezaktywuj %s przed usunięciem jego danych folderów."
 
 #. translators: %s: plugin name.
-#: includes/import.php:373
+#: includes/import.php:374
 msgid "%s is active next to Media Directory, so the Media Library shows two folder sidebars. Import its folders, then deactivate it."
 msgstr "%s jest aktywny obok Media Directory, więc biblioteka mediów pokazuje dwa panele folderów. Zaimportuj jego foldery, a potem go dezaktywuj."
 
 #. translators: %s: plugin name.
-#: includes/import.php:383
+#: includes/import.php:384
 msgid "Deactivate %s"
 msgstr "Dezaktywuj %s"
 
@@ -563,7 +566,7 @@ msgid "Also switchable with the toggle above the folder tree."
 msgstr "Można to też przełączać przełącznikiem nad drzewem folderów."
 
 #: includes/settings.php:53
-#: build/index.js:17
+#: build/index.js:18
 msgid "Show subfolders above the files"
 msgstr "Pokazuj podfoldery nad plikami"
 
@@ -572,7 +575,7 @@ msgid "Breadcrumb tiles for the folders inside the open folder, with a “New fo
 msgstr "Kafelki folderów znajdujących się w otwartym folderze, z kafelkiem „Nowy folder”."
 
 #: includes/settings.php:58
-#: build/index.js:17
+#: build/index.js:18
 msgid "Open the current folder in the tree"
 msgstr "Otwieraj bieżący folder w drzewie"
 
@@ -581,7 +584,7 @@ msgid "Expands the tree to the folder you open from a tile or the breadcrumb."
 msgstr "Rozwija drzewo do folderu otwartego z kafelka lub ścieżki."
 
 #: includes/settings.php:63
-#: build/index.js:17
+#: build/index.js:18
 msgid "Remember the last folder separately for each content type"
 msgstr "Zapamiętuj ostatni folder osobno dla każdego typu treści"
 
@@ -601,22 +604,109 @@ msgstr "Jak zachowują się foldery dla użytkowników, którzy nie zmienili teg
 msgid "On"
 msgstr "Włączone"
 
-#: build/index.js:17
+#: build/index.js:18
 msgid "View options"
 msgstr "Opcje widoku"
 
-#: build/index.js:17
+#: build/index.js:18
 msgid "Expand all folders"
 msgstr "Rozwiń wszystkie foldery"
 
-#: build/index.js:17
+#: build/index.js:18
 msgid "Collapse all folders"
 msgstr "Zwiń wszystkie foldery"
 
-#: build/index.js:17
+#: build/index.js:18
 msgid "Folder tools"
 msgstr "Narzędzia folderów"
 
-#: build/index.js:20
+#: build/index.js:21
 msgid "Files from subfolders"
 msgstr "Pliki z podfolderów"
+
+#: includes/rest.php:332
+msgid "That is not a valid color."
+msgstr "To nie jest prawidłowy kolor."
+
+#. translators: %s: folder name.
+#: build/index.js:17
+msgid "Changed the color of “%s” back."
+msgstr "Przywrócono poprzedni kolor folderu „%s”."
+
+#: build/index.js:16
+msgid "Red"
+msgstr "Czerwony"
+
+#: build/index.js:16
+msgid "Orange"
+msgstr "Pomarańczowy"
+
+#: build/index.js:16
+msgid "Yellow"
+msgstr "Żółty"
+
+#: build/index.js:16
+msgid "Green"
+msgstr "Zielony"
+
+#: build/index.js:16
+msgid "Teal"
+msgstr "Morski"
+
+#: build/index.js:16
+msgid "Blue"
+msgstr "Niebieski"
+
+#: build/index.js:16
+msgid "Light blue"
+msgstr "Jasnoniebieski"
+
+#: build/index.js:16
+msgid "Purple"
+msgstr "Fioletowy"
+
+#: build/index.js:16
+msgid "Pink"
+msgstr "Różowy"
+
+#: build/index.js:16
+msgid "Brown"
+msgstr "Brązowy"
+
+#: build/index.js:16
+msgid "Gray"
+msgstr "Szary"
+
+#: build/index.js:16
+msgid "Dark gray"
+msgstr "Ciemnoszary"
+
+#: build/index.js:18
+#: build/index.js:19
+msgid "Change color"
+msgstr "Zmień kolor"
+
+#: build/index.js:19
+msgid "Hide folders"
+msgstr "Ukryj foldery"
+
+#: build/index.js:21
+msgid "Show folders"
+msgstr "Pokaż foldery"
+
+#: includes/download.php:93
+msgid "This server cannot create ZIP files (the PHP zip extension is missing)."
+msgstr "Ten serwer nie może tworzyć plików ZIP (brak rozszerzenia PHP zip)."
+
+#: includes/download.php:114
+msgid "The ZIP file could not be created."
+msgstr "Nie udało się utworzyć pliku ZIP."
+
+#: includes/download.php:151
+msgid "There are no files in this folder to download."
+msgstr "W tym folderze nie ma plików do pobrania."
+
+#: build/index.js:18
+#: build/index.js:19
+msgid "Download"
+msgstr "Pobierz"

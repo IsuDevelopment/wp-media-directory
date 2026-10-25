@@ -532,3 +532,49 @@ window.wp.Uploader.prototype.init = function () {
 
 	uploader.bind( 'UploadComplete', refresh );
 };
+
+// Core's Query observes wp.Uploader.queue only for a fixed list of args, so a
+// folder query never shows new uploads until reload. Observe it, filtered by folder.
+const QUERY_OBSERVED_ARGS = [
+	's',
+	'order',
+	'orderby',
+	'posts_per_page',
+	'post_mime_type',
+	'post_parent',
+	'author',
+];
+const queryInit = media.model.Query.prototype.initialize;
+
+media.model.Query.prototype.initialize = function () {
+	queryInit.apply( this, arguments );
+
+	const args = this.args || {};
+	const folder = normalizeFolder( args[ config.folderVar ] );
+	const allowed = [
+		...QUERY_OBSERVED_ARGS,
+		config.folderVar,
+		config.nestedVar,
+	];
+
+	if (
+		folder === ALL ||
+		! window.wp.Uploader ||
+		Object.keys( args ).some( ( key ) => ! allowed.includes( key ) )
+	) {
+		return;
+	}
+
+	const nested = !! Number( args[ config.nestedVar ] );
+
+	this.filters.imdFolder = ( attachment ) => {
+		const saved = attachment.get( 'imdFolders' );
+		const picked = attachment.get( 'file' )?.imdFolder;
+		const folders = saved
+			? saved.map( Number )
+			: [ picked ].filter( Boolean );
+
+		return isVisibleIn( folders, folder, nested );
+	};
+	this.observe( window.wp.Uploader.queue );
+};

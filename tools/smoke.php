@@ -11,6 +11,7 @@
 
 // No strict_types: wp eval-file evals this file, where declare() is not allowed.
 
+use IsuDevMediaDirectory\Download;
 use IsuDevMediaDirectory\Folders;
 use IsuDevMediaDirectory\Import;
 use IsuDevMediaDirectory\Permissions;
@@ -179,6 +180,12 @@ try {
 	);
 	$imd_is( 'add keeps nothing else', Folders\of( array( $imd_f3 ) ), array( $imd_f3 => array( $imd_c ) ) );
 
+	$imd_colored = $imd_rest( 'POST', '/folders/' . $imd_b, array( 'color' => '#F2C' ) );
+	$imd_is( 'color is stored as #rrggbb', Folders\all()[ $imd_b ]['color'], '#ff22cc' );
+	$imd_is( 'color change returns the previous color', $imd_colored['previous']['color'], '' );
+	$imd_is( 'tree carries the color', array_column( $imd_colored['tree']['folders'], 'color', 'id' )[ $imd_b ], '#ff22cc' );
+	$imd_is( 'invalid color is refused', $imd_rest( 'POST', '/folders/' . $imd_b, array( 'color' => 'red' ) )['code'] ?? '', 'imd_bad_color' );
+
 	$imd_deleted = $imd_rest(
 		'DELETE',
 		'/folders/' . $imd_a,
@@ -194,6 +201,38 @@ try {
 	$imd_rest( 'POST', '/folders/restore', array( 'snapshot' => $imd_deleted['snapshot'] ) );
 	$imd_rest( 'POST', '/items/set', array( 'map' => $imd_deleted['previous'] ) );
 	$imd_is( 'restore brings B back', Folders\exists( $imd_b ), true );
+	// Download: A's file at the root of the ZIP, B's file in "Smoke B/".
+	$imd_zip_file = Download\build( $imd_a );
+	$imd_entries  = array();
+
+	if ( is_string( $imd_zip_file ) ) {
+		$imd_zip = new ZipArchive();
+		$imd_zip->open( $imd_zip_file );
+
+		for ( $imd_i = 0; $imd_i < $imd_zip->count(); $imd_i++ ) { // phpcs:ignore Generic.CodeAnalysis.ForLoopWithTestFunctionCall
+			$imd_entries[] = $imd_zip->getNameIndex( $imd_i );
+		}
+
+		$imd_zip->close();
+		wp_delete_file( $imd_zip_file );
+	}
+
+	sort( $imd_entries );
+	$imd_expected = array(
+		'Smoke B/',
+		'Smoke B/' . wp_basename( Download\file_of( $imd_f1 ) ),
+		wp_basename( Download\file_of( $imd_f2 ) ),
+	);
+	sort( $imd_expected );
+	$imd_is( 'download zip holds the folder with its subfolder', $imd_entries, $imd_expected );
+	$imd_is( 'download of an empty folder is refused', is_wp_error( Download\build( Folders\create( 'Smoke empty', $imd_c, 'smoke' ) ) ), true );
+	$imd_used = array();
+	$imd_is( 'duplicate names get a number', array( Download\unique_entry( '', 'a.jpg', $imd_used ), Download\unique_entry( '', 'A.jpg', $imd_used ) ), array( 'a.jpg', 'A (2).jpg' ) );
+	$imd_is( 'zip names lose path characters', Download\clean_name( 'a/b: "c"' ), 'a-b- -c' );
+
+	$imd_is( 'restore keeps the color', Folders\all()[ $imd_b ]['color'], '#ff22cc' );
+	$imd_rest( 'POST', '/folders/' . $imd_b, array( 'color' => '' ) );
+	$imd_is( 'empty color clears it', Folders\all()[ $imd_b ]['color'], '' );
 	$imd_is(
 		'restore puts files back',
 		Folders\of( array( $imd_f1, $imd_f2 ) ),
@@ -315,17 +354,18 @@ global $wpdb;
 
 // phpcs:disable WordPress.DB -- Fake source tables for the test, created and dropped here.
 
-$imd_tax_source = new Import\Taxonomy_Source( 'imd-smoke-tax', 'Smoke tax', 'imd_smoke_tax', array( '/^$/' ) );
+$imd_tax_source = new Import\Taxonomy_Source( 'imd-smoke-tax', 'Smoke tax', 'imd_smoke_tax', array( '/^$/' ), array(), 'imd_smoke_color' );
 $imd_tab_source = new Import\Table_Source(
 	array(
-		'slug'        => 'imd-smoke-table',
-		'name'        => 'Smoke table',
-		'patterns'    => array( '/^$/' ),
-		'folders'     => 'imd_smoke_folders',
-		'folder_cols' => array( 'id', 'name', 'parent' ),
-		'items'       => 'imd_smoke_items',
-		'item_cols'   => array( 'folder_id', 'attachment_id' ),
-		'drop'        => array( 'imd_smoke_folders', 'imd_smoke_items' ),
+		'slug'          => 'imd-smoke-table',
+		'name'          => 'Smoke table',
+		'patterns'      => array( '/^$/' ),
+		'folders'       => 'imd_smoke_folders',
+		'folder_cols'   => array( 'id', 'name', 'parent' ),
+		'items'         => 'imd_smoke_items',
+		'item_cols'     => array( 'folder_id', 'attachment_id' ),
+		'drop'          => array( 'imd_smoke_folders', 'imd_smoke_items' ),
+		'colors_option' => 'imd_smoke_colors',
 	)
 );
 $imd_original   = Folders\of( $imd_files );
@@ -336,6 +376,7 @@ try {
 	$imd_term_a = wp_insert_term( 'Smoke Import A', 'imd_smoke_tax' );
 	$imd_term_b = wp_insert_term( 'Smoke Import B', 'imd_smoke_tax', array( 'parent' => $imd_term_a['term_id'] ) );
 	wp_set_object_terms( $imd_f1, array( (int) $imd_term_b['term_id'] ), 'imd_smoke_tax' );
+	add_term_meta( (int) $imd_term_b['term_id'], 'imd_smoke_color', '#3FA35B' );
 
 	$imd_preview = Import\preview( $imd_tax_source );
 	$imd_is( 'taxonomy preview counts', array( $imd_preview['folders'], $imd_preview['files'], $imd_preview['matches'] ), array( 2, 1, 1 ) );
@@ -345,6 +386,7 @@ try {
 	$imd_map = Import\imported_map( $imd_tax_source );
 	$imd_is( 'merged root is the existing folder', $imd_map[ (string) $imd_term_a['term_id'] ] ?? 0, $imd_existing );
 	$imd_is( 'file filed into imported child', in_array( $imd_map[ (string) $imd_term_b['term_id'] ] ?? -1, Folders\of( array( $imd_f1 ) )[ $imd_f1 ], true ), true );
+	$imd_is( 'import brings the folder color', Folders\all()[ $imd_map[ (string) $imd_term_b['term_id'] ] ?? 0 ]['color'] ?? '', '#3fa35b' );
 	$imd_is( 'second run adds nothing', Import\run( $imd_tax_source, Import\MODE_MERGE )['created'], 0 );
 
 	Import\cleanup( $imd_tax_source );
@@ -356,13 +398,17 @@ try {
 	$wpdb->query( "INSERT INTO {$wpdb->prefix}imd_smoke_folders VALUES (5, 'Smoke T1', -1), (6, 'Smoke T2', 5)" );
 	$wpdb->query( $wpdb->prepare( "INSERT INTO {$wpdb->prefix}imd_smoke_items VALUES (6, %d), (6, %d)", $imd_f2, $imd_f3 ) );
 
+	update_option( 'imd_smoke_colors', array( 6 => '#D6559B' ), false );
+
 	$imd_run = Import\run( $imd_tab_source, Import\MODE_SEPARATE );
 	$imd_is( 'separate creates root + 2 folders, files 2', array( $imd_run['created'], $imd_run['files'] ), array( 3, 2 ) );
 	$imd_map = Import\imported_map( $imd_tab_source );
+	$imd_is( 'table import brings the folder color', Folders\all()[ $imd_map['6'] ]['color'] ?? '', '#d6559b' );
 	$imd_is( 'separate root holds the tree', Folders\all()[ $imd_map['5'] ]['parent'], $imd_map['root'] );
 
 	Import\cleanup( $imd_tab_source );
 	$imd_is( 'table cleanup drops tables', Import\preview( $imd_tab_source )['folders'], 0 );
+	$imd_is( 'table cleanup deletes the color option', get_option( 'imd_smoke_colors', 'gone' ), 'gone' );
 } finally {
 	foreach ( array_merge( array_values( Import\imported_map( $imd_tax_source ) ), array_values( Import\imported_map( $imd_tab_source ) ), array( $imd_existing ) ) as $imd_id ) {
 		if ( Folders\exists( $imd_id ) ) {
@@ -372,6 +418,7 @@ try {
 
 	Import\cleanup( $imd_tax_source );
 	$imd_tab_source->cleanup();
+	delete_option( 'imd_smoke_colors' );
 	Folders\set( $imd_original );
 }
 

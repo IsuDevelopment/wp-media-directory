@@ -14,7 +14,10 @@ Simple folders for the WordPress Media Library — built to replace HappyFiles P
 - Shift / Cmd-click in the grid selects ranges without pressing "Bulk select".
 - Undo everything with ⌘Z / Ctrl+Z or the Undo button in the notice.
 - Uploads go into the open folder, even if you click another folder mid-upload.
-- Right-click a folder for New subfolder / Rename / Delete. Deleting a folder
+- Right-click a folder for New subfolder / Rename / Change color / Download /
+  Delete. Download gives a ZIP of the folder (original files, subfolders
+  included) named after it; it needs the PHP zip extension.
+  Colors come from a preset palette or any custom color. Deleting a folder
   asks what to do with its files: move them up, move them to another folder, or
   delete them.
 - Permissions per role: who can see, organize, create and delete folders.
@@ -28,6 +31,8 @@ Simple folders for the WordPress Media Library — built to replace HappyFiles P
 - **⚙ View options** above the tree, per user: show subfolders as tiles above
   the files (with a "New folder" tile; right-click a tile to rename or delete),
   open the current folder in the tree, remember the folder per content type.
+- **Hide folders** — the last button in the panel toolbar hides the tree for
+  more room; “Show folders” before the breadcrumb brings it back.
 - English, Polish, German and Norwegian (Bokmål).
 
 Requires WordPress 7.0+ and PHP 7.4+. Folders are virtual: files never move on
@@ -55,7 +60,8 @@ Only administrators (`manage_options`) can open this page.
   Real Media Library, Folders (Premio), Enhanced Media Library, WP Media Folder
   or Wicked Folders. Works with that plugin deactivated and never changes its
   data. Choose *Merge with my folders* (same name in the same place = one
-  folder) or *Put everything in a new folder*. From HappyFiles you can also copy
+  folder) or *Put everything in a new folder*. HappyFiles and FileBird folder
+  colors come along. From HappyFiles you can also copy
   folder access per role. Imports can be repeated; they only add what is
   missing. Afterwards, with the other plugin deactivated, you can delete its
   folder data. While such a plugin is active, a notice offers to import and

@@ -32,7 +32,8 @@ class Table_Source extends Source {
 	 *
 	 * Keys: slug, name, patterns (plugin name regexes), folders + folder_cols
 	 * ([id, name, parent]), items + item_cols ([folder, attachment]), drop
-	 * (tables removed by cleanup). Table names are without the DB prefix.
+	 * (tables removed by cleanup), optional colors_option (option holding
+	 * folder ID => colour, deleted by cleanup). Table names are without the DB prefix.
 	 *
 	 * @param array<string, mixed> $config Source definition.
 	 */
@@ -82,7 +83,7 @@ class Table_Source extends Source {
 	/**
 	 * Folders keyed by the plugin's folder ID. Parents of 0 or below are the root.
 	 *
-	 * @return array<string, array{name:string, parent:string}>
+	 * @return array<string, array{name:string, parent:string, color?:string}>
 	 */
 	public function folders(): array {
 		global $wpdb;
@@ -96,12 +97,14 @@ class Table_Source extends Source {
 		list( $id, $name, $parent ) = $this->config['folder_cols'];
 
 		$rows    = $wpdb->get_results( "SELECT `{$id}`, `{$name}`, `{$parent}` FROM `{$table}`", ARRAY_N );
+		$colors  = empty( $this->config['colors_option'] ) ? array() : (array) get_option( $this->config['colors_option'], array() );
 		$folders = array();
 
 		foreach ( (array) $rows as $row ) {
 			$folders[ (string) (int) $row[0] ] = array(
 				'name'   => (string) $row[1],
 				'parent' => (int) $row[2] > 0 ? (string) (int) $row[2] : '',
+				'color'  => (string) ( $colors[ (int) $row[0] ] ?? '' ),
 			);
 		}
 
@@ -139,12 +142,16 @@ class Table_Source extends Source {
 	}
 
 	/**
-	 * Drop the plugin's folder tables.
+	 * Drop the plugin's folder tables (and its colour option).
 	 *
 	 * @return void
 	 */
 	public function cleanup(): void {
 		global $wpdb;
+
+		if ( ! empty( $this->config['colors_option'] ) ) {
+			delete_option( $this->config['colors_option'] );
+		}
 
 		foreach ( $this->config['drop'] as $table ) {
 			$wpdb->query( 'DROP TABLE IF EXISTS `' . esc_sql( $wpdb->prefix . $table ) . '`' );

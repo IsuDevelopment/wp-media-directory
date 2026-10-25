@@ -60,6 +60,13 @@ class Taxonomy_Source extends Source {
 	private $root_slugs;
 
 	/**
+	 * Term meta key holding a folder colour, '' when the plugin has none.
+	 *
+	 * @var string
+	 */
+	private $color_meta;
+
+	/**
 	 * Set up.
 	 *
 	 * @param string   $slug       Source slug.
@@ -67,13 +74,15 @@ class Taxonomy_Source extends Source {
 	 * @param string   $taxonomy   Taxonomy.
 	 * @param string[] $patterns   Plugin name patterns.
 	 * @param string[] $root_slugs Root term slugs to skip.
+	 * @param string   $color_meta Term meta key with the folder colour.
 	 */
-	public function __construct( string $slug, string $name, string $taxonomy, array $patterns, array $root_slugs = array() ) {
+	public function __construct( string $slug, string $name, string $taxonomy, array $patterns, array $root_slugs = array(), string $color_meta = '' ) {
 		$this->slug       = $slug;
 		$this->name       = $name;
 		$this->taxonomy   = $taxonomy;
 		$this->patterns   = $patterns;
 		$this->root_slugs = $root_slugs;
+		$this->color_meta = $color_meta;
 	}
 
 	/**
@@ -148,10 +157,11 @@ class Taxonomy_Source extends Source {
 	/**
 	 * Folders keyed by term ID.
 	 *
-	 * @return array<string, array{name:string, parent:string}>
+	 * @return array<string, array{name:string, parent:string, color?:string}>
 	 */
 	public function folders(): array {
 		$terms   = $this->terms();
+		$colors  = $this->colors();
 		$skipped = array();
 		$folders = array();
 
@@ -171,10 +181,44 @@ class Taxonomy_Source extends Source {
 			$folders[ (string) $term['term_id'] ] = array(
 				'name'   => $term['name'],
 				'parent' => $parent ? (string) $parent : '',
+				'color'  => $colors[ $term['term_id'] ] ?? '',
 			);
 		}
 
 		return $folders;
+	}
+
+	/**
+	 * Folder colours keyed by term ID (SQL, so it works with the plugin off).
+	 *
+	 * @return array<int, string>
+	 */
+	private function colors(): array {
+		global $wpdb;
+
+		if ( '' === $this->color_meta ) {
+			return array();
+		}
+
+		$rows = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT tm.term_id, tm.meta_value
+				FROM {$wpdb->termmeta} tm
+				INNER JOIN {$wpdb->term_taxonomy} tt ON tt.term_id = tm.term_id AND tt.taxonomy = %s
+				WHERE tm.meta_key = %s",
+				$this->taxonomy,
+				$this->color_meta
+			),
+			ARRAY_N
+		);
+
+		$colors = array();
+
+		foreach ( (array) $rows as $row ) {
+			$colors[ (int) $row[0] ] = (string) $row[1];
+		}
+
+		return $colors;
 	}
 
 	/**

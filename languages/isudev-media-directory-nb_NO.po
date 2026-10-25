@@ -39,27 +39,27 @@ msgstr "IsuDev"
 msgid "https://isudev.pl"
 msgstr "https://isudev.pl"
 
-#: includes/import.php:237
+#: includes/import.php:238
 msgid "Untitled folder"
 msgstr "Mappe uten navn"
 
 #. translators: %s: plugin name.
-#: includes/import.php:337
+#: includes/import.php:338
 msgid "Deactivate %s before deleting its folder data."
 msgstr "Deaktiver %s før du sletter mappedataene."
 
 #. translators: %s: plugin name.
-#: includes/import.php:373
+#: includes/import.php:374
 msgid "%s is active next to Media Directory, so the Media Library shows two folder sidebars. Import its folders, then deactivate it."
 msgstr "%s er aktiv ved siden av Media Directory, så mediebiblioteket viser to mappepaneler. Importer mappene, og deaktiver den deretter."
 
-#: includes/import.php:378
+#: includes/import.php:379
 #: includes/settings.php:565
 msgid "Import folders"
 msgstr "Importer mapper"
 
 #. translators: %s: plugin name.
-#: includes/import.php:383
+#: includes/import.php:384
 msgid "Deactivate %s"
 msgstr "Deaktiver %s"
 
@@ -95,40 +95,42 @@ msgstr "Slette mapper"
 msgid "Delete folders that hold files or subfolders"
 msgstr "Slette mapper som inneholder filer eller undermapper"
 
+#: includes/download.php:191
 #: includes/rest.php:78
 #: includes/settings.php:630
 msgid "Sorry, you are not allowed to do that."
 msgstr "Beklager, du har ikke tillatelse til å gjøre dette."
 
-#: includes/rest.php:267
-#: includes/rest.php:309
+#: includes/rest.php:271
+#: includes/rest.php:314
 msgid "Folder name cannot be empty."
 msgstr "Mappenavnet kan ikke være tomt."
 
-#: includes/rest.php:271
+#: includes/rest.php:275
 msgid "The parent folder no longer exists."
 msgstr "Overordnet mappe finnes ikke lenger."
 
-#: includes/rest.php:295
-#: includes/rest.php:343
-#: includes/rest.php:458
+#: includes/download.php:89
+#: includes/rest.php:299
+#: includes/rest.php:356
+#: includes/rest.php:471
 msgid "Folder not found."
 msgstr "Fant ikke mappen."
 
-#: includes/rest.php:317
+#: includes/rest.php:322
 #: build/index.js:13
 msgid "A folder cannot be moved into itself."
 msgstr "En mappe kan ikke flyttes inn i seg selv."
 
-#: includes/rest.php:364
+#: includes/rest.php:377
 msgid "Choose a folder outside the one being deleted."
 msgstr "Velg en mappe utenfor den som slettes."
 
-#: includes/rest.php:370
+#: includes/rest.php:383
 msgid "You are not allowed to delete some of these files."
 msgstr "Du har ikke tillatelse til å slette noen av disse filene."
 
-#: includes/rest.php:454
+#: includes/rest.php:467
 msgid "No files you can edit were selected."
 msgstr "Ingen filer du kan redigere ble valgt."
 
@@ -141,7 +143,7 @@ msgid "Also switchable with the toggle above the folder tree."
 msgstr "Kan også slås av og på med bryteren over mappetreet."
 
 #: includes/settings.php:53
-#: build/index.js:17
+#: build/index.js:18
 msgid "Show subfolders above the files"
 msgstr "Vis undermapper over filene"
 
@@ -150,7 +152,7 @@ msgid "Breadcrumb tiles for the folders inside the open folder, with a “New fo
 msgstr "Fliser for mappene i den åpne mappen, med en «Ny mappe»-flis."
 
 #: includes/settings.php:58
-#: build/index.js:17
+#: build/index.js:18
 msgid "Open the current folder in the tree"
 msgstr "Åpne gjeldende mappe i treet"
 
@@ -159,7 +161,7 @@ msgid "Expands the tree to the folder you open from a tile or the breadcrumb."
 msgstr "Utvider treet til mappen du åpner fra en flis eller mappestien."
 
 #: includes/settings.php:63
-#: build/index.js:17
+#: build/index.js:18
 msgid "Remember the last folder separately for each content type"
 msgstr "Husk siste mappe separat for hver innholdstype"
 
@@ -170,7 +172,7 @@ msgstr "For eksempel én mappe når du legger til bilder i produkter, og en anne
 #: includes/settings.php:164
 #: includes/settings.php:165
 #: includes/settings.php:336
-#: build/index.js:18
+#: build/index.js:19
 msgid "Folder settings"
 msgstr "Mappeinnstillinger"
 
@@ -359,8 +361,8 @@ msgstr "Gjenopprettet mappen «%s»."
 
 #. translators: %d: number of files.
 #: build/index.js:9
-#: build/index.js:19
-#: build/index.js:22
+#: build/index.js:20
+#: build/index.js:23
 msgid "%d file"
 msgid_plural "%d files"
 msgstr[0] "%d fil"
@@ -409,198 +411,286 @@ msgstr "Flyttet «%s» til øverste nivå."
 msgid "Moved “%s” back."
 msgstr "Flyttet «%s» tilbake."
 
-#: build/index.js:16
+#: build/index.js:17
 msgid "Collapse"
 msgstr "Skjul"
 
-#: build/index.js:16
+#: build/index.js:17
 msgid "Expand"
 msgstr "Utvid"
 
-#: build/index.js:16
-#: build/index.js:20
+#: build/index.js:17
+#: build/index.js:21
 msgid "Folder name"
 msgstr "Mappenavn"
 
 #. translators: %d: number of files.
-#: build/index.js:17
+#: build/index.js:18
 msgid "%d file including subfolders"
 msgid_plural "%d files including subfolders"
 msgstr[0] "%d fil inkludert undermapper"
 msgstr[1] "%d filer inkludert undermapper"
 
-#: build/index.js:17
+#: build/index.js:18
 msgid "Folder actions"
 msgstr "Mappehandlinger"
 
-#: build/index.js:17
+#: build/index.js:18
 msgid "New subfolder"
 msgstr "Ny undermappe"
 
-#: build/index.js:17
 #: build/index.js:18
+#: build/index.js:19
 msgid "Rename"
 msgstr "Gi nytt navn"
 
-#: build/index.js:17
 #: build/index.js:18
+#: build/index.js:19
 msgid "Delete"
 msgstr "Slett"
 
-#: build/index.js:17
-#: build/index.js:20
+#: build/index.js:18
+#: build/index.js:21
 msgid "New folder name"
 msgstr "Navn på ny mappe"
 
-#: build/index.js:17
+#: build/index.js:18
 msgid "View options"
 msgstr "Visningsvalg"
 
-#: build/index.js:17
 #: build/index.js:18
+#: build/index.js:19
 msgid "Folders"
 msgstr "Mapper"
 
 #. translators: %s: folder name.
-#: build/index.js:18
+#: build/index.js:19
 msgid "New folder in “%s”"
 msgstr "Ny mappe i «%s»"
 
-#: build/index.js:18
-#: build/index.js:20
+#: build/index.js:19
+#: build/index.js:21
 msgid "New folder"
 msgstr "Ny mappe"
 
-#: build/index.js:17
+#: build/index.js:18
 msgid "Show files from subfolders"
 msgstr "Vis filer fra undermapper"
 
-#: build/index.js:18
+#: build/index.js:19
 msgid "Search folders"
 msgstr "Søk i mapper"
 
-#: build/index.js:18
-#: build/index.js:20
+#: build/index.js:19
+#: build/index.js:21
 msgid "All files"
 msgstr "Alle filer"
 
-#: build/index.js:18
-#: build/index.js:20
+#: build/index.js:19
+#: build/index.js:21
 msgid "Not in a folder"
 msgstr "Ikke i en mappe"
 
-#: build/index.js:18
+#: build/index.js:19
 msgid "Create your first folder"
 msgstr "Opprett din første mappe"
 
-#: build/index.js:18
+#: build/index.js:19
 msgid "No folders found."
 msgstr "Fant ingen mapper."
 
 #. translators: %d: number of folders.
-#: build/index.js:20
+#: build/index.js:21
 msgid "%d folder"
 msgid_plural "%d folders"
 msgstr[0] "%d mappe"
 msgstr[1] "%d mapper"
 
-#: build/index.js:20
+#: build/index.js:21
 msgid "Folder path"
 msgstr "Mappesti"
 
 #. translators: %d: number of files.
-#: build/index.js:21
+#: build/index.js:22
 msgid "%d more file is in subfolders."
 msgid_plural "%d more files are in subfolders."
 msgstr[0] "%d fil til ligger i undermapper."
 msgstr[1] "%d filer til ligger i undermapper."
 
-#: build/index.js:21
+#: build/index.js:22
 msgid "Show them here"
 msgstr "Vis dem her"
 
-#: build/index.js:20
 #: build/index.js:21
+#: build/index.js:22
 msgid "Subfolders"
 msgstr "Undermapper"
 
 #. translators: %d: number of folders.
-#: build/index.js:23
+#: build/index.js:24
 msgid "%d subfolder"
 msgid_plural "%d subfolders"
 msgstr[0] "%d undermappe"
 msgstr[1] "%d undermapper"
 
 #. translators: %s: parent folder name.
-#: build/index.js:24
+#: build/index.js:25
 msgid "Move them up to “%s”"
 msgstr "Flytt dem opp til «%s»"
 
-#: build/index.js:24
+#: build/index.js:25
 msgid "Keep them in the library, without a folder"
 msgstr "Behold dem i biblioteket, uten mappe"
 
-#: build/index.js:24
+#: build/index.js:25
 msgid "Move them to another folder"
 msgstr "Flytt dem til en annen mappe"
 
-#: build/index.js:24
+#: build/index.js:25
 msgid "Delete the files permanently"
 msgstr "Slett filene permanent"
 
 #. translators: %s: folder name.
-#: build/index.js:25
+#: build/index.js:26
 msgid "Delete “%s”?"
 msgstr "Slette «%s»?"
 
 #. translators: 1: folder name, 2: e.g. "12 files, 2 subfolders".
-#: build/index.js:26
+#: build/index.js:27
 msgid "“%1$s” holds %2$s. The folder and its subfolders will be removed. What should happen to the files?"
 msgstr "«%1$s» inneholder %2$s. Mappen og undermappene fjernes. Hva skal skje med filene?"
 
-#: build/index.js:26
+#: build/index.js:27
 msgid "Files"
 msgstr "Filer"
 
-#: build/index.js:26
+#: includes/download.php:63
+#: build/index.js:27
 msgid "Folder"
 msgstr "Mappe"
 
-#: build/index.js:26
+#: build/index.js:27
 msgid "— Choose a folder —"
 msgstr "— Velg en mappe —"
 
-#: build/index.js:26
+#: build/index.js:27
 msgid "The files are removed from the whole library, including other folders and any posts that use them. This cannot be undone."
 msgstr "Filene fjernes fra hele biblioteket, også fra andre mapper og fra alle innlegg som bruker dem. Dette kan ikke angres."
 
-#: build/index.js:26
+#: build/index.js:27
 msgid "Cancel"
 msgstr "Avbryt"
 
 #. translators: %d: number of files.
-#: build/index.js:27
+#: build/index.js:28
 msgid "Delete folder and %d file"
 msgid_plural "Delete folder and %d files"
 msgstr[0] "Slett mappen og %d fil"
 msgstr[1] "Slett mappen og %d filer"
 
-#: build/index.js:27
+#: build/index.js:28
 msgid "Delete folder"
 msgstr "Slett mappe"
 
-#: build/index.js:17
+#: build/index.js:18
 msgid "Expand all folders"
 msgstr "Utvid alle mapper"
 
-#: build/index.js:17
+#: build/index.js:18
 msgid "Collapse all folders"
 msgstr "Skjul alle mapper"
 
-#: build/index.js:17
+#: build/index.js:18
 msgid "Folder tools"
 msgstr "Mappeverktøy"
 
-#: build/index.js:20
+#: build/index.js:21
 msgid "Files from subfolders"
 msgstr "Filer fra undermapper"
+
+#: includes/rest.php:332
+msgid "That is not a valid color."
+msgstr "Det er ikke en gyldig farge."
+
+#. translators: %s: folder name.
+#: build/index.js:17
+msgid "Changed the color of “%s” back."
+msgstr "Fargen på «%s» er tilbakestilt."
+
+#: build/index.js:16
+msgid "Red"
+msgstr "Rød"
+
+#: build/index.js:16
+msgid "Orange"
+msgstr "Oransje"
+
+#: build/index.js:16
+msgid "Yellow"
+msgstr "Gul"
+
+#: build/index.js:16
+msgid "Green"
+msgstr "Grønn"
+
+#: build/index.js:16
+msgid "Teal"
+msgstr "Blågrønn"
+
+#: build/index.js:16
+msgid "Blue"
+msgstr "Blå"
+
+#: build/index.js:16
+msgid "Light blue"
+msgstr "Lyseblå"
+
+#: build/index.js:16
+msgid "Purple"
+msgstr "Lilla"
+
+#: build/index.js:16
+msgid "Pink"
+msgstr "Rosa"
+
+#: build/index.js:16
+msgid "Brown"
+msgstr "Brun"
+
+#: build/index.js:16
+msgid "Gray"
+msgstr "Grå"
+
+#: build/index.js:16
+msgid "Dark gray"
+msgstr "Mørkegrå"
+
+#: build/index.js:18
+#: build/index.js:19
+msgid "Change color"
+msgstr "Endre farge"
+
+#: build/index.js:19
+msgid "Hide folders"
+msgstr "Skjul mapper"
+
+#: build/index.js:21
+msgid "Show folders"
+msgstr "Vis mapper"
+
+#: includes/download.php:93
+msgid "This server cannot create ZIP files (the PHP zip extension is missing)."
+msgstr "Denne serveren kan ikke lage ZIP-filer (PHP-utvidelsen zip mangler)."
+
+#: includes/download.php:114
+msgid "The ZIP file could not be created."
+msgstr "ZIP-filen kunne ikke lages."
+
+#: includes/download.php:151
+msgid "There are no files in this folder to download."
+msgstr "Det er ingen filer å laste ned i denne mappen."
+
+#: build/index.js:18
+#: build/index.js:19
+msgid "Download"
+msgstr "Last ned"

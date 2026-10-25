@@ -43,7 +43,7 @@ abstract class Source {
 	/**
 	 * Folders keyed by the source's own ID.
 	 *
-	 * @return array<string, array{name:string, parent:string}> Parent '' = root.
+	 * @return array<string, array{name:string, parent:string, color?:string}> Parent '' = root; color `#rrggbb` when the source has one.
 	 */
 	abstract public function folders(): array;
 

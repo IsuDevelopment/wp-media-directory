@@ -128,6 +128,10 @@ function register_routes(): void {
 					'id'     => $id_arg,
 					'name'   => array( 'type' => 'string' ),
 					'parent' => array( 'type' => 'integer' ),
+					'color'  => array(
+						'description' => '#rrggbb, or an empty string for no colour.',
+						'type'        => 'string',
+					),
 				),
 			),
 			array(
@@ -283,7 +287,7 @@ function create_folder( WP_REST_Request $request ) {
 }
 
 /**
- * POST /folders/{id} — rename or move.
+ * POST /folders/{id} — rename, move or recolour.
  *
  * @param WP_REST_Request $request Request.
  * @return WP_REST_Response|WP_Error
@@ -300,6 +304,7 @@ function update_folder( WP_REST_Request $request ) {
 	$previous = array(
 		'name'   => $folder['name'],
 		'parent' => $folder['parent'],
+		'color'  => $folder['color'],
 	);
 
 	if ( null !== $request['name'] ) {
@@ -318,6 +323,14 @@ function update_folder( WP_REST_Request $request ) {
 		}
 
 		$fields['parent'] = $parent;
+	}
+
+	if ( null !== $request['color'] ) {
+		$fields['color'] = Folders\clean_color( $request['color'] );
+
+		if ( '' === $fields['color'] && '' !== trim( (string) $request['color'] ) ) {
+			return new WP_Error( 'imd_bad_color', __( 'That is not a valid color.', 'isudev-media-directory' ), array( 'status' => 400 ) );
+		}
 	}
 
 	Folders\update( $id, $fields );

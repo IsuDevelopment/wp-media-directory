@@ -22,7 +22,7 @@ const UNASSIGNED = 'unassigned';
  * Every folder as id => row, cached for the request.
  *
  * @param bool $refresh Drop the cache first.
- * @return array<int, array{id:int, parent:int, name:string}>
+ * @return array<int, array{id:int, parent:int, name:string, color:string}>
  */
 function all( bool $refresh = false ): array {
 	static $cache = null;
@@ -34,7 +34,7 @@ function all( bool $refresh = false ): array {
 	global $wpdb;
 
 	$table = Schema\folders_table();
-	$rows  = $wpdb->get_results( "SELECT id, parent_id, name FROM {$table}", ARRAY_A );
+	$rows  = $wpdb->get_results( "SELECT id, parent_id, name, color FROM {$table}", ARRAY_A );
 	$cache = array();
 
 	foreach ( (array) $rows as $row ) {
@@ -42,6 +42,7 @@ function all( bool $refresh = false ): array {
 			'id'     => (int) $row['id'],
 			'parent' => (int) $row['parent_id'],
 			'name'   => (string) $row['name'],
+			'color'  => (string) $row['color'],
 		);
 	}
 
@@ -103,14 +104,36 @@ function scope( int $folder, bool $nested ): array {
 }
 
 /**
+ * A `#rrggbb` colour, or '' for none.
+ *
+ * @param mixed $value Raw value.
+ * @return string
+ */
+function clean_color( $value ): string {
+	$color = sanitize_hex_color( trim( (string) $value ) );
+
+	if ( ! $color ) {
+		return '';
+	}
+
+	// Expand #rgb so the column (and the UI's comparisons) see one format.
+	if ( 4 === strlen( $color ) ) {
+		$color = '#' . $color[1] . $color[1] . $color[2] . $color[2] . $color[3] . $color[3];
+	}
+
+	return strtolower( $color );
+}
+
+/**
  * Create a folder.
  *
- * @param string $name   Folder name.
+ * @param string $name      Folder name.
  * @param int    $parent_id Parent folder ID, 0 for the root.
- * @param string $ref    Import reference.
+ * @param string $ref       Import reference.
+ * @param string $color     Colour, `#rrggbb` or ''.
  * @return int New folder ID.
  */
-function create( string $name, int $parent_id = 0, string $ref = '' ): int {
+function create( string $name, int $parent_id = 0, string $ref = '', string $color = '' ): int {
 	global $wpdb;
 
 	$wpdb->insert(
@@ -119,9 +142,10 @@ function create( string $name, int $parent_id = 0, string $ref = '' ): int {
 			'parent_id'  => $parent_id,
 			'name'       => $name,
 			'import_ref' => $ref,
+			'color'      => clean_color( $color ),
 			'created_at' => current_time( 'mysql', true ),
 		),
-		array( '%d', '%s', '%s', '%s' )
+		array( '%d', '%s', '%s', '%s', '%s' )
 	);
 
 	all( true );
@@ -130,10 +154,10 @@ function create( string $name, int $parent_id = 0, string $ref = '' ): int {
 }
 
 /**
- * Rename and/or move a folder.
+ * Rename, move and/or recolour a folder.
  *
- * @param int                              $id     Folder ID.
- * @param array{name?:string, parent?:int} $fields Fields to change.
+ * @param int                                             $id     Folder ID.
+ * @param array{name?:string, parent?:int, color?:string} $fields Fields to change.
  * @return void
  */
 function update( int $id, array $fields ): void {
@@ -147,6 +171,10 @@ function update( int $id, array $fields ): void {
 
 	if ( isset( $fields['parent'] ) ) {
 		$data['parent_id'] = $fields['parent'];
+	}
+
+	if ( isset( $fields['color'] ) ) {
+		$data['color'] = clean_color( $fields['color'] );
 	}
 
 	if ( $data ) {
@@ -185,7 +213,7 @@ function delete( int $id ): array {
 	$items_table  = Schema\items_table();
 
 	$snapshot = array(
-		'folders' => $wpdb->get_results( "SELECT id, parent_id, name, import_ref, created_at FROM {$folder_table} WHERE id IN ({$in})", ARRAY_A ),
+		'folders' => $wpdb->get_results( "SELECT id, parent_id, name, color, import_ref, created_at FROM {$folder_table} WHERE id IN ({$in})", ARRAY_A ),
 		'items'   => array_map(
 			static function ( $row ) {
 				return array( (int) $row[0], (int) $row[1] );
@@ -224,10 +252,11 @@ function restore( array $snapshot ): void {
 				'id'         => $id,
 				'parent_id'  => $parent,
 				'name'       => sanitize_text_field( (string) ( $row['name'] ?? '' ) ),
+				'color'      => clean_color( $row['color'] ?? '' ),
 				'import_ref' => sanitize_text_field( (string) ( $row['import_ref'] ?? '' ) ),
 				'created_at' => current_time( 'mysql', true ),
 			),
-			array( '%d', '%d', '%s', '%s', '%s' )
+			array( '%d', '%d', '%s', '%s', '%s', '%s' )
 		);
 	}
 
@@ -408,6 +437,7 @@ function tree(): array {
 			'id'     => $id,
 			'parent' => $folder['parent'],
 			'name'   => $folder['name'],
+			'color'  => $folder['color'],
 			'count'  => $direct[ $id ] ?? 0,
 			'total'  => isset( $below[ $id ] ) ? count( $below[ $id ] ) : 0,
 		);

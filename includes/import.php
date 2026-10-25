@@ -49,17 +49,18 @@ function sources(): array {
 	}
 
 	$list = array(
-		new Taxonomy_Source( 'happyfiles', 'HappyFiles', 'happyfiles_category', array( '/^HappyFiles\b/i' ) ),
+		new Taxonomy_Source( 'happyfiles', 'HappyFiles', 'happyfiles_category', array( '/^HappyFiles\b/i' ), array(), 'happyfiles_folder_color' ),
 		new Table_Source(
 			array(
-				'slug'        => 'filebird',
-				'name'        => 'FileBird',
-				'patterns'    => array( '/^FileBird\b/i' ),
-				'folders'     => 'fbv',
-				'folder_cols' => array( 'id', 'name', 'parent' ),
-				'items'       => 'fbv_attachment_folder',
-				'item_cols'   => array( 'folder_id', 'attachment_id' ),
-				'drop'        => array( 'fbv', 'fbv_attachment_folder' ),
+				'slug'          => 'filebird',
+				'name'          => 'FileBird',
+				'patterns'      => array( '/^FileBird\b/i' ),
+				'folders'       => 'fbv',
+				'folder_cols'   => array( 'id', 'name', 'parent' ),
+				'items'         => 'fbv_attachment_folder',
+				'item_cols'     => array( 'folder_id', 'attachment_id' ),
+				'drop'          => array( 'fbv', 'fbv_attachment_folder' ),
+				'colors_option' => 'fbv_folder_colors',
 			)
 		),
 		new Table_Source(
@@ -242,7 +243,7 @@ function run( Source $source, string $mode = MODE_MERGE ): array {
 					Folders\set_ref( $match, $source->slug() . ':' . $id );
 					++$reused;
 				} else {
-					$map[ $id ]                                    = Folders\create( $name, $target_parent, $source->slug() . ':' . $id );
+					$map[ $id ]                                    = Folders\create( $name, $target_parent, $source->slug() . ':' . $id, (string) ( $folder['color'] ?? '' ) );
 					$existing[ name_key( $target_parent, $name ) ] = $map[ $id ];
 					++$created;
 				}

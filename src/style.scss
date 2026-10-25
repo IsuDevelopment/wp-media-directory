@@ -830,3 +830,51 @@ body.imd-is-dragging .uploader-editor {
 	height: 32px;
 	padding: 0 4px;
 }
+
+/* Folder colour popover (core ColorPalette). */
+.imd-color-popover__inner {
+	width: 260px;
+	padding: 16px;
+}
+
+/* -------------------------------------------------------------------------
+ * Folder panel hidden (body class from store.setPanelHidden()).
+ * ---------------------------------------------------------------------- */
+
+.imd-panel-hidden {
+
+	.attachments-browser.imd-has-folders > .imd-sidebar,
+	.imd-list-layout > .imd-sidebar {
+		display: none;
+	}
+
+	.media-frame.mode-grid .attachments-browser.imd-has-folders {
+		padding-left: 0;
+	}
+
+	.media-modal .attachments-browser.imd-has-folders {
+
+		> .media-toolbar,
+		> .attachments-wrapper,
+		> .uploader-inline {
+			left: 0;
+		}
+	}
+
+	.imd-list-layout {
+		display: block;
+	}
+
+	// "Show folders" sits right before the breadcrumb.
+	.imd-content-header__bar {
+		justify-content: flex-start;
+
+		.imd-crumbs {
+			margin-right: auto;
+		}
+	}
+
+	.imd-show-panel {
+		margin-right: -8px;
+	}
+}

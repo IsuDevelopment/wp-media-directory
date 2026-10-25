@@ -14,7 +14,7 @@ namespace IsuDevMediaDirectory\Schema;
 
 defined( 'ABSPATH' ) || exit;
 
-const DB_VERSION = '1';
+const DB_VERSION = '2';
 const OPTION     = 'isudev_media_directory_db_version';
 
 /**
@@ -78,6 +78,7 @@ function install(): void {
 			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
 			parent_id bigint(20) unsigned NOT NULL DEFAULT 0,
 			name varchar(200) NOT NULL DEFAULT '',
+			color varchar(7) NOT NULL DEFAULT '',
 			import_ref varchar(64) NOT NULL DEFAULT '',
 			created_at datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
 			PRIMARY KEY  (id),
