@@ -14,6 +14,9 @@ Simple folders for the WordPress Media Library — built to replace HappyFiles P
 - Shift / Cmd-click in the grid selects ranges without pressing "Bulk select".
 - Undo everything with ⌘Z / Ctrl+Z or the Undo button in the notice.
 - Uploads go into the open folder, even if you click another folder mid-upload.
+  On Media → Add Media File pick the folder in “Upload to folder” (it starts
+  at the folder you used last). Files dropped straight onto a block in the
+  editor land in “Not in a folder”.
 - Right-click a folder for New subfolder / Rename / Change color / Download /
   Delete. Download gives a ZIP of the folder (original files, subfolders
   included) named after it; it needs the PHP zip extension.

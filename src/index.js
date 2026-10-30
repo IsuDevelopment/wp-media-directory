@@ -7,6 +7,7 @@ import { createRoot } from '@wordpress/element';
 import './style.scss';
 import './media';
 import bootList from './list';
+import bootUploadPage from './upload-page';
 import Notices from './components/notices';
 import { canUndo, config, getState, undo } from './store';
 import { folderProps, getActiveView } from './view';
@@ -79,4 +80,6 @@ domReady( () => {
 	if ( config.view === 'list' ) {
 		bootList();
 	}
+
+	bootUploadPage();
 } );

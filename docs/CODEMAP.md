@@ -31,7 +31,7 @@ this file honest: every file, REST route and WordPress hook must appear here.
 | `folders.php` | `…\Folders` | **Repository — the only code that touches the tables.** Tree reads, CRUD, `subtree()`, `scope()`, `of()`, `set()`, `insert_items()`, `attachments_in()`, `delete()` → snapshot, `restore()`, `tree()` with counts. |
 | `query.php` | `…\Query` | Narrows attachment queries: `ajax_query_attachments_args` (grid + modals), `pre_get_posts` (list view), `posts_where` (the SQL), `the_posts` (primes folder IDs), `folders_of()` cache. |
 | `rest.php` | `…\REST` | All routes. Every write returns the fresh `tree` plus what the client needs to undo. |
-| `admin.php` | `…\Admin` | Enqueue on `wp_enqueue_media` + `upload.php`, `window.isudevMediaDirectory` config, `imdFolders` in attachment JSON, filing uploads (`add_attachment`), cleanup on `delete_attachment`. |
+| `admin.php` | `…\Admin` | Enqueue on `wp_enqueue_media` + `upload.php`, `window.isudevMediaDirectory` config, `imdFolders` in attachment JSON, filing uploads (`add_attachment`), "Upload to folder" field on `media-new.php`, cleanup on `delete_attachment`. |
 | `download.php` | `…\Download` | Folder → ZIP: `build()` (originals via `wp_get_original_image_path`, subfolders as directories, files the user cannot `read_post` skipped, `CM_STORE`, duplicate names get ` (2)`), `handle()` streams it on `admin-post.php?action=isudev_media_directory_download&folder=` (nonce + `upload_files` + `imd_view_folders`). `base_url()` → `config.download` (empty without the zip extension, which hides the menu item). |
 | `settings.php` | `…\Settings` | Every tab is white core `.postbox` panels (`panel_open()` / `panel_close()`, small inline CSS in `enqueue_styles()`). Preferences: `preference_defs()` (nested, tiles, reveal, per_post_type), site defaults `get()`, per-user `prefs_for_user()` / `save_prefs_for_user()` / `prefs_for_js()`. Media → Folder settings (admins only) with tabs General (preference defaults), Permissions (matrix form), Import (per-source preview, merge/separate, HappyFiles permissions, cleanup with confirmation). Results via a per-user transient notice. |
 | `permissions.php` | `…\Permissions` | Role × action matrix (option `isudev_media_directory_permissions`) granted as capabilities `imd_view_folders`, `imd_organize_files`, `imd_manage_folders`, `imd_delete_folders` via `user_has_cap`. `can_delete()` = delete cap, or manage cap on an empty folder. `for_js()` → `config.can`. |
@@ -51,7 +51,8 @@ this file honest: every file, REST route and WordPress hook must appear here.
 | `init` (priority 1) | action | `load_textdomain` (bootstrap) | Translations before anything renders. |
 | `rest_api_init` | action | `REST\register_routes` | All routes. |
 | `wp_enqueue_media` | action | `Admin\enqueue` | Load the UI wherever a media modal can open. |
-| `admin_enqueue_scripts` | action | `Admin\enqueue_library` | List view never calls `wp_enqueue_media()`. |
+| `admin_enqueue_scripts` | action | `Admin\enqueue_library` | List view and `media-new.php` never call `wp_enqueue_media()`. |
+| `pre-upload-ui` | action | `Admin\upload_folder_field` | "Upload to folder" select on `media-new.php`. |
 | `wp_prepare_attachment_for_js` | filter | `Admin\attachment_json` | `imdFolders` on every attachment model. |
 | `add_attachment` | action | `Admin\file_upload` | File an upload into its stamped folder. |
 | `delete_attachment` | action | `Admin\forget_attachment` | Drop deleted files from folders. |
@@ -150,6 +151,7 @@ join `folder`. From "All files"/"Not in a folder" (`from` = 0) it replaces all.
 | `view.js` | `createView()` — one per place that shows files (grid, each modal browser, list). Holds the *selected* folder and the *shown* folder (lags while loading); expands the tree to the opened folder when `prefs.reveal`. `getActiveView()` decides where uploads go. `folderProps()` builds query props. |
 | `media.js` | Backbone patches: `AttachmentsBrowser.initialize/dispose` (mount sidebar + header, initial props, modal scroll fix), `load()` (prefetch-then-swap, no flicker), `Attachment.render` (folder badge), tile drag start, shift/cmd-click → bulk select, `wp.Uploader` folder stamping. |
 | `list.js` | List view: builds the layout around `#posts-filter`; `load()` fetches the page for the new folder URL and swaps `#the-list` + `.tablenav-pages` (no reload, `history.replaceState`, full navigation only as fallback); row dragging; hidden inputs that keep the folder through filter submits. |
+| `upload-page.js` | `media-new.php`: preselects the last folder in `#imd-upload-folder`, remembers changes, stamps core's global plupload `window.uploader` (`FilesAdded`/`BeforeUpload`) with the picked folder. |
 | `list-swap.js` | Pure-DOM swap of `#the-list` + `.tablenav-pages` from a fetched page; unit-tested in `src/test/list-swap.test.js`. Standard CSS selectors only (jQuery's `:checkbox` throws). |
 | `drag.js` | Current drag payload (`files` or `folder`), custom drag image, `imd-is-dragging` body class. |
 | `fit-panel.js` | Keeps the sidebar panel in the viewport and full height (replaces CSS sticky, see AGENTS.md). |
@@ -178,7 +180,10 @@ collection → snackbar with Undo → undo entry `POST /items/set previous`.
 **Upload.** `drop`/file-input `change` (capture) stamps `pickedFolder` from the
 active view → plupload `FilesAdded` copies it onto each file → `BeforeUpload`
 puts it in `multipart_params.imd_folder` → `Admin\file_upload()` on
-`add_attachment` → `UploadComplete` → `store.refresh()`.
+`add_attachment` → `UploadComplete` → `store.refresh()`. On `media-new.php` `upload-page.js` stamps from the "Upload to folder"
+select instead (the no-JS uploader posts the same field). REST uploads
+(`POST /wp/v2/media`: Image block, featured image) are not filed; an
+`apiFetch` middleware in `media.js` only calls `store.refresh()` after them.
 
 **Download folder.** Row/tile menu "Download" (only when `config.download` and
 the folder has files) → `store.downloadFolder()` → `admin-post.php` →
@@ -263,6 +268,8 @@ admin (`docs/VERIFY.md`), plus `npm run check`.
 | Manage frame modes `grid`/`edit`/`select`, `activateMode`/`deactivateMode` | `media.js` shift-click | Shift-click opens the details modal |
 | `wp.Uploader.prototype.init`, plupload `FilesAdded`/`BeforeUpload`/`UploadComplete`, `setOption('multipart_params')` | `media.js` | Uploads land outside the folder |
 | `wp.media.model.Query.prototype.initialize`, `this.args`, `filters`, `observe( wp.Uploader.queue )` (core's allowed-args list) | `media.js` | Files uploaded into a folder appear only after a reload |
+| `pre-upload-ui` inside `#file-form`, global `window.uploader` from `plupload/handlers.js` | `admin.php`, `upload-page.js` | "Upload to folder" missing or ignored on Add Media File |
+| `wp.apiFetch.use` middleware, editor uploads via `POST /wp/v2/media` | `media.js` | Folder counts stale after uploading onto a block until reload |
 | `ajax_query_attachments_args` + raw `$_REQUEST['query']` (core whitelists keys) | `query.php` | Every folder shows all files |
 | Modal CSS: `.attachments-browser .attachments` absolute at `top: 72px`, `right: 300px`; 900px breakpoint `top: 131px`, `right: 262px` | `style.scss` modal section | Header hidden behind files, overlap |
 | Grid toolbar `.wp-filter` `margin: 12px 0`; `.media-frame` / browser `overflow: hidden` | `style.scss`, `fit-panel.js` | Sidebar misaligned, cut off |

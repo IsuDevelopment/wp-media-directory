@@ -1,6 +1,6 @@
 {
 	"name": "@isudev/media-directory",
-	"version": "0.4.0",
+	"version": "0.4.1",
 	"description": "Simple, fast folders for the WordPress Media Library.",
 	"license": "GPL-2.0-or-later",
 	"private": true,

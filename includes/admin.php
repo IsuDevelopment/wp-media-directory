@@ -34,6 +34,7 @@ function boot(): void {
 	add_action( 'admin_enqueue_scripts', __NAMESPACE__ . '\\enqueue_library' );
 	add_filter( 'wp_prepare_attachment_for_js', __NAMESPACE__ . '\\attachment_json', 10, 2 );
 	add_action( 'add_attachment', __NAMESPACE__ . '\\file_upload' );
+	add_action( 'pre-upload-ui', __NAMESPACE__ . '\\upload_folder_field' );
 	add_action( 'delete_attachment', __NAMESPACE__ . '\\forget_attachment' );
 	add_filter( 'media_library_infinite_scrolling', __NAMESPACE__ . '\\infinite_scrolling' );
 }
@@ -51,13 +52,14 @@ function infinite_scrolling( $enabled ): bool {
 }
 
 /**
- * The Media Library list view never calls wp_enqueue_media(), so load it there too.
+ * The Media Library list view and Add Media File never call wp_enqueue_media(),
+ * so load it there too.
  *
  * @param string $hook_suffix Admin page.
  * @return void
  */
 function enqueue_library( string $hook_suffix ): void {
-	if ( 'upload.php' === $hook_suffix ) {
+	if ( in_array( $hook_suffix, array( 'upload.php', 'media-new.php' ), true ) ) {
 		wp_enqueue_media();
 		enqueue();
 	}
@@ -142,6 +144,55 @@ function file_upload( int $attachment_id ): void {
 	if ( $folder && Folders\exists( $folder ) && current_user_can( 'upload_files' ) && Permissions\can( Permissions\ORGANIZE ) ) {
 		Folders\insert_items( array( array( $folder, $attachment_id ) ) );
 	}
+}
+
+/**
+ * "Upload to folder" on Media → Add Media File (media-new.php).
+ *
+ * A plain field inside core's upload form, so the no-JS browser uploader
+ * posts it too; `src/upload-page.js` stamps plupload uploads with it.
+ *
+ * @return void
+ */
+function upload_folder_field(): void {
+	$screen = get_current_screen();
+
+	if ( ! $screen || 'media' !== $screen->id || ! current_user_can( 'upload_files' ) || ! Permissions\can( Permissions\ORGANIZE ) || ! Folders\all() ) {
+		return;
+	}
+
+	// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Preselects a field only.
+	$selected = isset( $_GET[ Query\FOLDER_VAR ] ) ? absint( $_GET[ Query\FOLDER_VAR ] ) : 0;
+	$children = array();
+
+	foreach ( Folders\all() as $folder ) {
+		$children[ $folder['parent'] ][] = $folder;
+	}
+
+	$options = function ( int $parent_id, int $depth ) use ( &$options, $children, $selected ): void {
+		$level = $children[ $parent_id ] ?? array();
+		usort( $level, fn( $a, $b ) => strnatcasecmp( $a['name'], $b['name'] ) );
+
+		foreach ( $level as $folder ) {
+			printf(
+				'<option value="%1$d"%2$s>%3$s%4$s</option>',
+				(int) $folder['id'],
+				selected( $selected, $folder['id'], false ),
+				str_repeat( '&nbsp;&nbsp;&nbsp;', $depth ), // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Fixed markup.
+				esc_html( $folder['name'] )
+			);
+			$options( (int) $folder['id'], $depth + 1 );
+		}
+	};
+	?>
+	<p class="imd-upload-folder">
+		<label for="imd-upload-folder"><?php esc_html_e( 'Upload to folder', 'isudev-media-directory' ); ?></label>
+		<select id="imd-upload-folder" name="<?php echo esc_attr( Query\FOLDER_VAR ); ?>">
+			<option value="0"><?php esc_html_e( 'Not in a folder', 'isudev-media-directory' ); ?></option>
+			<?php $options( 0, 0 ); ?>
+		</select>
+	</p>
+	<?php
 }
 
 /**

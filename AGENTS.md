@@ -252,7 +252,8 @@ npm run test:i18n
 ## Known gaps / backlog
 
 - REST uploads (dropping a file straight onto an Image block, `/wp/v2/media`)
-  and `media-new.php` do not file into a folder.
+  land in “Not in a folder” — decided: the editor has no folder context, and
+  guessing one misfiles (the HappyFiles bug). `media-new.php` has a folder select.
 - List view reloads the page on folder change (server-rendered table).
 - "All files" shows every root folder as a tile; with many roots this pushes
   files down — collapse or hide pending a decision.

@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.4.1 — 2026-10-30
+
+- Media → Add Media File has an “Upload to folder” field; it starts at the
+  folder you used last.
+- Folder counts in the media dialog are right after a file is uploaded
+  straight onto an Image block (or as a featured image); before, they stayed
+  at the old numbers until the page was reloaded.
+
 ## 0.4.0 — 2026-10-26
 
 - Download a folder: right-click a folder (or ⋮) → Download gives a ZIP named

@@ -878,3 +878,9 @@ body.imd-is-dragging .uploader-editor {
 		margin-right: -8px;
 	}
 }
+
+// "Upload to folder" on Media → Add Media File.
+.imd-upload-folder label {
+	margin-right: 8px;
+	font-weight: 600;
+}

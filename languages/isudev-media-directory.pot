@@ -2,14 +2,14 @@
 # This file is distributed under the GPL-2.0-or-later.
 msgid ""
 msgstr ""
-"Project-Id-Version: IsuDev Media Directory 0.3.0\n"
+"Project-Id-Version: IsuDev Media Directory 0.4.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/isudev-media-directory\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-25T23:00:43+00:00\n"
+"POT-Creation-Date: 2026-10-29T13:18:58+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.11.0\n"
 "X-Domain: isudev-media-directory\n"
@@ -37,6 +37,16 @@ msgstr ""
 #. Author URI of the plugin
 #: isudev-media-directory.php
 msgid "https://isudev.pl"
+msgstr ""
+
+#: includes/admin.php:189
+msgid "Upload to folder"
+msgstr ""
+
+#: includes/admin.php:191
+#: build/index.js:19
+#: build/index.js:21
+msgid "Not in a folder"
 msgstr ""
 
 #: includes/download.php:63
@@ -584,11 +594,6 @@ msgstr ""
 #: build/index.js:19
 #: build/index.js:21
 msgid "All files"
-msgstr ""
-
-#: build/index.js:19
-#: build/index.js:21
-msgid "Not in a folder"
 msgstr ""
 
 #: build/index.js:19

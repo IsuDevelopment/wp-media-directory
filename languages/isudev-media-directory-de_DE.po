@@ -486,6 +486,7 @@ msgstr "Ordner durchsuchen"
 msgid "All files"
 msgstr "Alle Dateien"
 
+#: includes/admin.php:191
 #: build/index.js:19
 #: build/index.js:21
 msgid "Not in a folder"
@@ -694,3 +695,7 @@ msgstr "In diesem Ordner gibt es keine Dateien zum Herunterladen."
 #: build/index.js:19
 msgid "Download"
 msgstr "Herunterladen"
+
+#: includes/admin.php:189
+msgid "Upload to folder"
+msgstr "In Ordner hochladen"

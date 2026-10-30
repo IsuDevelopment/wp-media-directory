@@ -271,6 +271,7 @@ msgstr "Szukaj folderów"
 msgid "All files"
 msgstr "Wszystkie pliki"
 
+#: includes/admin.php:191
 #: build/index.js:19
 #: build/index.js:21
 msgid "Not in a folder"
@@ -710,3 +711,7 @@ msgstr "W tym folderze nie ma plików do pobrania."
 #: build/index.js:19
 msgid "Download"
 msgstr "Pobierz"
+
+#: includes/admin.php:189
+msgid "Upload to folder"
+msgstr "Prześlij do folderu"

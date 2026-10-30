@@ -533,6 +533,22 @@ window.wp.Uploader.prototype.init = function () {
 	uploader.bind( 'UploadComplete', refresh );
 };
 
+// Uploads that skip plupload (a file dropped on an Image block, featured image)
+// go through REST and never reach UploadComplete, so the tree counts went stale.
+window.wp.apiFetch?.use( ( options, next ) => {
+	const result = next( options );
+	const target = options.path || options.url || '';
+
+	if (
+		options.method === 'POST' &&
+		/\/wp\/v2\/media\/?(\?|$)/.test( target )
+	) {
+		result.then( refresh, () => {} );
+	}
+
+	return result;
+} );
+
 // Core's Query observes wp.Uploader.queue only for a fixed list of args, so a
 // folder query never shows new uploads until reload. Observe it, filtered by folder.
 const QUERY_OBSERVED_ARGS = [

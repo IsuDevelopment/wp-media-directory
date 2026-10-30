@@ -486,6 +486,7 @@ msgstr "Søk i mapper"
 msgid "All files"
 msgstr "Alle filer"
 
+#: includes/admin.php:191
 #: build/index.js:19
 #: build/index.js:21
 msgid "Not in a folder"
@@ -694,3 +695,7 @@ msgstr "Det er ingen filer å laste ned i denne mappen."
 #: build/index.js:19
 msgid "Download"
 msgstr "Last ned"
+
+#: includes/admin.php:189
+msgid "Upload to folder"
+msgstr "Last opp til mappe"
