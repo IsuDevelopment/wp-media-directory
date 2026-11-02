@@ -13,6 +13,7 @@
 	<exclude-pattern>*/vendor/*</exclude-pattern>
 	<exclude-pattern>*/languages/*</exclude-pattern>
 	<exclude-pattern>*/example/*</exclude-pattern>
+	<exclude-pattern>*/dist/*</exclude-pattern>
 
 	<rule ref="WordPress">
 		<!-- Hooks are intentionally namespaced with a slash (isudev_media_directory/foo). -->

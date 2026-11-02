@@ -5,7 +5,9 @@ working in this repo. `CLAUDE.md` and `GEMINI.md` only point here. Everything
 needed to pick the work up lives in the repo — nothing depends on one tool's
 private features.
 
-Repository: `git@github.com:IsuDevelopment/wp-media-directory.git` (public).
+Repository: `git@github.com:IsuDevelopment/wp-media-directory.git` (**private**).
+Users only ever see the releases repository and wordpress.org, which get built
+copies without agent docs, tools or tests (`docs/RELEASE.md` "Repositories").
 
 ## Start here
 
@@ -26,13 +28,13 @@ Repository: `git@github.com:IsuDevelopment/wp-media-directory.git` (public).
 | New or changed string | "Translations" below | `languages/*` |
 | Something broke after a WP update | CODEMAP "Core couplings" | that table |
 | Settings / WP-CLI / anything an operator sees | README | README, CHANGELOG |
-| Release | `docs/RELEASE.md` | version in 4 places, CHANGELOG |
+| Release | `docs/RELEASE.md` | version in 4 places, CHANGELOG, `readme.txt` (`Stable tag` + changelog) |
 
 ## What this is
 
 A WordPress plugin (WP 7.0+, PHP 7.4+) that adds folders to the Media Library
 and to every media modal. An isuDev product: it replaces HappyFiles Pro on
-client sites, is released on GitHub and will go to wordpress.org.
+client sites, is released on GitHub and is being prepared for wordpress.org.
 `example/happyfiles-pro/` (gitignored, may be absent) is HappyFiles, kept only
 as a reference for the import.
 
@@ -188,7 +190,7 @@ npm run check          # lint:js, lint:css, lint:php, test:js, test:version, tes
 - `test:js` — Jest unit tests in `src/test/` (jsdom; `wp-scripts test-unit-js`).
   Pure-DOM logic that a browser would otherwise be needed to check goes into
   its own WordPress-free module with a test, like `src/list-swap.js`.
-- `test:version` — plugin header, `VERSION`, `package.json`, `package-lock.json`
+- `test:version` — plugin header, `VERSION`, `package.json`, `package-lock.json`, `readme.txt`
   and a `CHANGELOG.md` section agree.
 - `test:docs` — every file, REST route and hook appears in `docs/CODEMAP.md`;
   `CLAUDE.md`/`GEMINI.md` point here.

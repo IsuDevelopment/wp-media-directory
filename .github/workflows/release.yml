@@ -121,3 +121,47 @@ jobs:
           name: v${{ steps.version.outputs.version }}
           body_path: /tmp/notes.md
           files: isudev-media-directory-${{ steps.version.outputs.version }}.zip
+
+      # The source repository is private; client sites update from this public,
+      # releases-only repository (includes/updater.php). Needs the RELEASES_TOKEN secret
+      # (fine-grained PAT, Contents: write on that repository).
+      - name: Publish the release to the releases repository
+        if: steps.tag_check.outputs.exists == 'false'
+        uses: softprops/action-gh-release@v2
+        with:
+          repository: IsuDevelopment/wp-media-directory-releases
+          token: ${{ secrets.RELEASES_TOKEN }}
+          tag_name: v${{ steps.version.outputs.version }}
+          name: v${{ steps.version.outputs.version }}
+          body_path: /tmp/notes.md
+          files: isudev-media-directory-${{ steps.version.outputs.version }}.zip
+
+      - name: Build the wordpress.org copy
+        if: steps.tag_check.outputs.exists == 'false'
+        run: tools/build-wporg.sh
+
+      - name: Plugin Check
+        if: steps.tag_check.outputs.exists == 'false'
+        uses: WordPress/plugin-check-action@v1
+        with:
+          build-dir: dist/wporg/isudev-media-directory
+
+      - name: Keep the wordpress.org zip (first submission is a manual upload)
+        if: steps.tag_check.outputs.exists == 'false'
+        uses: actions/upload-artifact@v4
+        with:
+          name: isudev-media-directory-wporg-${{ steps.version.outputs.version }}
+          path: dist/isudev-media-directory-wporg-${{ steps.version.outputs.version }}.zip
+
+      # Off until wordpress.org approves the plugin: set the repository variable
+      # WPORG_DEPLOY=true and the secrets SVN_USERNAME / SVN_PASSWORD.
+      - name: Deploy to wordpress.org SVN
+        if: steps.tag_check.outputs.exists == 'false' && vars.WPORG_DEPLOY == 'true'
+        uses: 10up/action-wordpress-plugin-deploy@stable
+        env:
+          SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
+          SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
+          SLUG: isudev-media-directory
+          VERSION: ${{ steps.version.outputs.version }}
+          BUILD_DIR: dist/wporg/isudev-media-directory
+          ASSETS_DIR: .wordpress-org

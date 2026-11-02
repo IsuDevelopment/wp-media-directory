@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.4.2 — 2026-11-02
+
+- Updates for installs from the GitHub zip now come from the public
+  releases repository (`IsuDevelopment/wp-media-directory-releases`); the
+  source repository is private.
+- Ready for wordpress.org: a separate build without the self-updater, plus
+  `readme.txt`.
+
 ## 0.4.1 — 2026-10-30
 
 - Media → Add Media File has an “Upload to folder” field; it starts at the

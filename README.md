@@ -84,10 +84,11 @@ wp media-directory permissions                   # the role matrix
 ## Installing and updating
 
 Download `isudev-media-directory-<version>.zip` from the
-[GitHub releases](https://github.com/IsuDevelopment/wp-media-directory/releases)
+[releases](https://github.com/IsuDevelopment/wp-media-directory-releases/releases)
 and upload it in Plugins → Add New. Installs from the zip update themselves from
-new releases like any other plugin. Composer installs (`type: vcs` on a tag) are
-updated through Composer.
+new releases like any other plugin. Composer installs (`type: vcs` on a tag of
+this private repository) are updated through Composer. Once the plugin is on
+wordpress.org, installs from there update through wordpress.org.
 
 ## Uninstall
 

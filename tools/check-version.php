@@ -1,7 +1,7 @@
 <?php
 /**
  * Fails when the version disagrees between the plugin header, the VERSION
- * const, package.json, package-lock.json and CHANGELOG.md. Plain PHP.
+ * const, package.json, package-lock.json, readme.txt and CHANGELOG.md. Plain PHP.
  *
  * Usage: npm run test:version   (php tools/check-version.php)
  * Prints the version on success, so CI can reuse it.
@@ -23,11 +23,13 @@ preg_match( "/^const VERSION = '([^']+)';/m", $main, $const );
 $version  = $header[1] ?? '';
 $package  = json_decode( (string) file_get_contents( "$root/package.json" ), true );
 $lock     = json_decode( (string) file_get_contents( "$root/package-lock.json" ), true );
+$readme   = (string) file_get_contents( "$root/readme.txt" );
 $versions = array(
 	'VERSION const'                => $const[1] ?? '',
 	'package.json'                 => $package['version'] ?? '',
 	'package-lock.json'            => $lock['version'] ?? '',
 	'package-lock.json packages[]' => $lock['packages']['']['version'] ?? '',
+	'readme.txt Stable tag'        => preg_match( '/^Stable tag:\s*(\S+)/m', $readme, $stable ) ? $stable[1] : '',
 );
 
 if ( ! preg_match( '/^\d+\.\d+\.\d+$/', $version ) ) {
@@ -42,6 +44,10 @@ foreach ( $versions as $where => $value ) {
 
 if ( ! preg_match( '/^## ' . preg_quote( $version, '/' ) . '\b/m', (string) file_get_contents( "$root/CHANGELOG.md" ) ) ) {
 	$errors[] = "CHANGELOG.md has no '## $version' section.";
+}
+
+if ( ! preg_match( '/^= ' . preg_quote( $version, '/' ) . ' =$/m', $readme ) ) {
+	$errors[] = "readme.txt has no '= $version =' changelog entry.";
 }
 
 if ( $errors ) {
