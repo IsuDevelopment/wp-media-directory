@@ -8,7 +8,7 @@ Stable tag: 0.4.2
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Simple, fast folders for the Media Library. Files stay visible across the folder tree, every move can be undone, and folders work in every media dialog.
+Simple, fast folders for the Media Library: files visible across the tree, undo for every move, folders in every media dialog.
 
 == Description ==
 
