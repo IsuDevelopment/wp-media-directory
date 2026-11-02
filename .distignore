@@ -27,3 +27,5 @@
 /.distignore
 *.zip
 .DS_Store
+/.wordpress-org
+/screenshots

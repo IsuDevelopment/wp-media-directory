@@ -1,0 +1,37 @@
+name: wordpress.org check
+
+# Builds the wordpress.org copy and runs Plugin Check on every pull request,
+# so directory problems show up before a release. See docs/RELEASE.md.
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  plugin-check:
+    name: Plugin Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: npm
+
+      - name: Build assets
+        run: |
+          npm ci
+          npm run build
+
+      - name: Build the wordpress.org copy
+        run: tools/build-wporg.sh
+
+      - name: Plugin Check
+        uses: WordPress/plugin-check-action@v1
+        with:
+          build-dir: dist/wporg/isudev-media-directory

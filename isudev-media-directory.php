@@ -1,9 +1,9 @@
 <?php
 /**
  * Plugin Name:       IsuDev Media Directory
- * Plugin URI:        https://github.com/IsuDevelopment/wp-media-directory
+ * Plugin URI:        https://isudev.com/plugins/media-directory/
  * Description:       Simple folders for the Media Library. Files stay visible across the whole folder tree, moves can be undone, and the folders work in every media modal.
- * Version:           0.4.1
+ * Version:           0.4.2
  * Requires at least: 7.0
  * Requires PHP:      7.4
  * Author:            IsuDev
@@ -23,7 +23,7 @@ namespace IsuDevMediaDirectory;
 
 defined( 'ABSPATH' ) || exit;
 
-const VERSION = '0.4.1';
+const VERSION = '0.4.2';
 
 define( 'IsuDevMediaDirectory\\PATH', plugin_dir_path( __FILE__ ) );
 define( 'IsuDevMediaDirectory\\URL', plugin_dir_url( __FILE__ ) );
@@ -40,7 +40,6 @@ require_once PATH . 'includes/import/class-source.php';
 require_once PATH . 'includes/import/class-taxonomy-source.php';
 require_once PATH . 'includes/import/class-table-source.php';
 require_once PATH . 'includes/import.php';
-require_once PATH . 'includes/updater.php';
 
 register_activation_hook( __FILE__, __NAMESPACE__ . '\\Schema\\install' );
 
@@ -52,7 +51,12 @@ Admin\boot();
 Download\boot();
 Settings\boot();
 Import\boot();
-Updater\boot( __FILE__ );
+
+// The GitHub build self-updates; the wordpress.org build ships without updater.php.
+if ( is_readable( PATH . 'includes/updater.php' ) ) {
+	require_once PATH . 'includes/updater.php';
+	Updater\boot( __FILE__ );
+}
 
 if ( defined( 'WP_CLI' ) && WP_CLI ) {
 	require_once PATH . 'includes/class-command.php';

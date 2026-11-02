@@ -2,6 +2,9 @@
 /**
  * Self-updates from GitHub releases (Plugin Update Checker).
  *
+ * Releases are published to a public releases-only repository; the source
+ * repository is private. The wordpress.org build does not ship this file.
+ *
  * Only release-zip installs update themselves: they bundle vendor/. Composer
  * installs have none (Composer owns the version), and a git checkout must
  * never be overwritten by an update — see docs/RELEASE.md.
@@ -19,7 +22,7 @@ use const IsuDevMediaDirectory\PATH;
 
 defined( 'ABSPATH' ) || exit;
 
-const REPOSITORY = 'https://github.com/IsuDevelopment/wp-media-directory/';
+const REPOSITORY = 'https://github.com/IsuDevelopment/wp-media-directory-releases/';
 const SLUG       = 'isudev-media-directory';
 
 /**

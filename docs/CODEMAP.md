@@ -39,7 +39,7 @@ this file honest: every file, REST route and WordPress hook must appear here.
 | `import/class-source.php` | `…\Import\Source` | Abstract source: `slug()`, `name()`, `folders()` (`[id => {name, parent}]`, parent `''` = root), `items()` (`[[folder id, attachment id]]`), `cleanup()`, `active_plugin()` (matches active plugins' "Plugin Name" against `plugin_patterns()`). |
 | `import/class-taxonomy-source.php` | `…\Import\Taxonomy_Source` | Taxonomy-based plugins: HappyFiles (`happyfiles_category`, colours from term meta `happyfiles_folder_color`), Folders by Premio (`media_folder`), Enhanced Media Library (`media_category`), WP Media Folder (`wpmf-category`, skips its `wp-media-folder-root` term), Wicked Folders (`wf_attachment_folders`). SQL only, works with the plugin off; items via `term_taxonomy_id`. Cleanup deletes terms, relationships, meta. |
 | `import/class-table-source.php` | `…\Import\Table_Source` | Table-based plugins: FileBird (`fbv`, `fbv_attachment_folder`, colours from option `fbv_folder_colors`, deleted by cleanup), Real Media Library (`realmedialibrary`, `realmedialibrary_posts`; parent `-1` = root). Cleanup drops their tables. |
-| `updater.php` | `…\Updater` | Plugin Update Checker against GitHub releases; boots only from a release zip (see `docs/RELEASE.md`). |
+| `updater.php` | `…\Updater` | Plugin Update Checker against the public releases repository; boots only from a release zip. The main file loads it only if present: the wordpress.org build drops it (see `docs/RELEASE.md`). |
 | `class-command.php` | `…\CLI\Command` | `wp media-directory list`, `sources`, `import <source> [--mode=merge\|separate] [--permissions]`, `cleanup <source> [--yes]`, `permissions`; `import-happyfiles` kept as an alias. |
 | `uninstall.php` | — | Drops both tables, options and user meta. Only on delete, never on deactivate. |
 
@@ -201,11 +201,15 @@ skip straight to `deleteFolder`) → `DeleteFolderModal` → `DELETE /folders/{i
 | `src/test/*.test.js` | `npm run test:js` — Jest + jsdom unit tests for WordPress-free modules. |
 | `tools/smoke.php` | `npm run test:smoke` — WP-CLI end-to-end against the real DB. |
 | `tools/check-translations.php` | `npm run test:i18n` — every locale in `languages/` complete, plural counts right, compiled files fresh. |
-| `tools/check-version.php` | `npm run test:version` — version agrees in all places; prints it for CI. |
+| `tools/check-version.php` | `npm run test:version` — version agrees in all places (incl. `readme.txt` Stable tag + changelog entry); prints it for CI. |
 | `tools/check-docs.php` | `npm run test:docs` — this map covers every file, route and hook; agent pointer files point at `AGENTS.md`; doc links resolve. |
 | `docs/VERIFY.md` | Agent-neutral verification recipes (checks + browser console snippets). |
 | `CLAUDE.md`, `GEMINI.md` | Pointers to `AGENTS.md`, nothing else. |
-| `.github/workflows/release.yml` | Release on version bump (tag with `build/`, zip with `vendor/`). |
+| `.github/workflows/release.yml` | Release on version bump (tag with `build/`, zip with `vendor/`, release here and in the releases repository, wp.org build + Plugin Check + optional SVN deploy). |
+| `.github/workflows/wporg-check.yml` | Pull requests: wp.org build + Plugin Check. |
+| `tools/build-wporg.sh` | wordpress.org copy in `dist/wporg/` + zip: no updater, no `Update URI`, `src/` kept, dev files asserted out. |
+| `readme.txt` | wordpress.org readme (description, FAQ, changelog, `Stable tag`). |
+| `.wordpress-org/` | wordpress.org banners, icon and screenshots (SVN `assets/`); not in any zip. |
 | `.distignore` | The one exclude list for packaging (`vendor/` re-added only for the GitHub zip). |
 | `.gitattributes` | `export-ignore` for Composer/GitHub source archives. |
 | `.claude/` | Claude Code only: `skills/` (thin pointers to `docs/VERIFY.md` and AGENTS.md "Translations"), `settings.json` (allowed commands), `launch.json` (browser pane). |
@@ -214,7 +218,7 @@ skip straight to `deleteFolder`) → `DeleteFolderModal` → `DELETE /folders/{i
 
 | Package | Kind | Why |
 | --- | --- | --- |
-| `yahnis-elsts/plugin-update-checker` | composer, runtime | Self-updates from GitHub releases (`includes/updater.php`). Shipped only in the GitHub zip. |
+| `yahnis-elsts/plugin-update-checker` | composer, runtime | Self-updates from GitHub releases (`includes/updater.php`). Shipped only in the GitHub zip, never in the wp.org build. |
 | `squizlabs/php_codesniffer`, `wp-coding-standards/wpcs`, `phpcompatibility/phpcompatibility-wp`, `dealerdirect/phpcodesniffer-composer-installer` | composer, dev | `npm run lint:php`. |
 | `@wordpress/scripts` | npm, dev | Build, ESLint, Stylelint, Prettier. |
 | `@wordpress/element`, `components`, `i18n`, `api-fetch`, `dom-ready`, `primitives`, `compose` | npm, externals | Provided by WordPress at runtime (`build/index.asset.php`); installed for lint/resolve. |
