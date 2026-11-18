@@ -279,4 +279,5 @@ admin (`docs/VERIFY.md`), plus `npm run check`.
 | Grid toolbar `.wp-filter` `margin: 12px 0`; `.media-frame` / browser `overflow: hidden` | `style.scss`, `fit-panel.js` | Sidebar misaligned, cut off |
 | List table `#posts-filter`, `#the-list tr#post-<id>`, `.tablenav .tablenav-pages`, `input[name="media[]"]`, `.view-switch a`; core's check-column handlers delegated on `body` | `list.js`, `index.js` | List view without sidebar, rows not draggable, folder switch shows stale rows/pagination, "select all" dead after a switch |
 | Core `.postbox` / `.postbox-header` / `.inside` markup and styles | `settings.php` | Settings tabs lose their white panels |
+| `WP_Query` result cache (6.1+) keyed on `wp_cache_get_last_changed( 'posts' )`; `Folders\items_changed()` bumps it | `folders.php` | With a persistent object cache a folder shows stale files after a move until the toggle/args change |
 | Media modal z-index 160000 | `style.scss` (`.imd-delete-overlay` 170000, snackbars 200000) | Dialog/snackbars behind the modal |

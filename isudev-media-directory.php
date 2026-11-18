@@ -3,7 +3,7 @@
  * Plugin Name:       IsuDev Media Directory
  * Plugin URI:        https://isudev.com/plugins/media-directory/
  * Description:       Simple folders for the Media Library. Files stay visible across the whole folder tree, moves can be undone, and the folders work in every media modal.
- * Version:           0.4.2
+ * Version:           0.4.3
  * Requires at least: 7.0
  * Requires PHP:      7.4
  * Author:            IsuDev
@@ -23,7 +23,7 @@ namespace IsuDevMediaDirectory;
 
 defined( 'ABSPATH' ) || exit;
 
-const VERSION = '0.4.2';
+const VERSION = '0.4.3';
 
 define( 'IsuDevMediaDirectory\\PATH', plugin_dir_path( __FILE__ ) );
 define( 'IsuDevMediaDirectory\\URL', plugin_dir_url( __FILE__ ) );

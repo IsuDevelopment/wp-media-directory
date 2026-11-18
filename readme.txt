@@ -4,7 +4,7 @@ Tags: media library, folders, media folders, organize media, file manager
 Requires at least: 7.0
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 0.4.2
+Stable tag: 0.4.3
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -72,6 +72,9 @@ It needs the PHP zip extension, which most hosts have.
 4. Importing folders from another plugin.
 
 == Changelog ==
+
+= 0.4.3 =
+* Fixed: with a persistent object cache (Redis, LiteSpeed) a folder could keep showing old files after moving files into it.
 
 = 0.4.2 =
 * First wordpress.org release.

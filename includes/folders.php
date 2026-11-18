@@ -225,6 +225,7 @@ function delete( int $id ): array {
 	$wpdb->query( "DELETE FROM {$items_table} WHERE folder_id IN ({$in})" );
 	$wpdb->query( "DELETE FROM {$folder_table} WHERE id IN ({$in})" );
 	all( true );
+	items_changed();
 
 	return $snapshot;
 }
@@ -300,6 +301,21 @@ function insert_items( array $pairs ): void {
 
 		$wpdb->query( "INSERT IGNORE INTO {$table} (folder_id, attachment_id) VALUES {$values}" );
 	}
+
+	items_changed();
+}
+
+/**
+ * Invalidate cached attachment queries after the items table changed.
+ *
+ * WP_Query caches results (6.1+) keyed on posts `last_changed`; our table
+ * doesn't bump it, so with a persistent object cache a folder kept showing
+ * the files it had before a move.
+ *
+ * @return void
+ */
+function items_changed(): void {
+	wp_cache_set_posts_last_changed();
 }
 
 /**
@@ -368,6 +384,7 @@ function set( array $map ): void {
 	$pairs = array();
 
 	$wpdb->query( "DELETE FROM {$table} WHERE attachment_id IN ({$in})" );
+	items_changed();
 
 	foreach ( $map as $attachment => $folders ) {
 		foreach ( array_unique( array_map( 'intval', $folders ) ) as $folder ) {
@@ -390,6 +407,7 @@ function forget( int $attachment_id ): void {
 	global $wpdb;
 
 	$wpdb->delete( Schema\items_table(), array( 'attachment_id' => $attachment_id ), array( '%d' ) );
+	items_changed();
 }
 
 /**

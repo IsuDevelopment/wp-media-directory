@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.4.3 — 2026-11-18
+
+- Fixed: on sites with a persistent object cache (Redis, LiteSpeed) a folder
+  could keep showing the files it had before a move — e.g. empty with “Show
+  files from subfolders” on, while “Not in a folder” still listed the moved
+  files.
+
 ## 0.4.2 — 2026-11-02
 
 - Updates for installs from the GitHub zip now come from the public
