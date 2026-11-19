@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.4.4 — 2026-11-20
+
+- Fixed: editing a block-editor gallery (“Add to gallery”, then back to “Edit
+  gallery”) no longer shows the folder panel there and no longer drops files
+  from the gallery — it kept only the files that were also in the open folder,
+  or none.
+
 ## 0.4.3 — 2026-11-18
 
 - Fixed: on sites with a persistent object cache (Redis, LiteSpeed) a folder

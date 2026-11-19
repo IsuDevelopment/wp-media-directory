@@ -267,6 +267,7 @@ admin (`docs/VERIFY.md`), plus `npm run check`.
 | We rely on | Used in | Symptom when it breaks |
 | --- | --- | --- |
 | `wp.media.view.AttachmentsBrowser` (`initialize`, `dispose`, `collection.props`, `attachmentsWrapper`, `attachments.options.scrollElement`, `toolbar.get('spinner')`) | `media.js` | No sidebar, or sidebar in gallery-edit grids |
+| Edit-gallery/playlist grids are a `wp.media.model.Selection` with `post__in` (block editor `MediaUpload`), library grids are plain queries | `media.js isLibrary()` | Folder panel in “Edit gallery”; gallery shrinks to files in the open folder or empties |
 | `wp.media.model.Query.get`, `Attachments.mirror`, `Query.more` | `media.js load()` | Folder clicks do nothing or show stale files |
 | `wp.media.view.Attachment` `initialize`/`render`, `li.attachment[data-id]`, `.attachment-preview` | `media.js` | No folder badges, tiles not draggable |
 | Manage frame modes `grid`/`edit`/`select`, `activateMode`/`deactivateMode` | `media.js` shift-click | Shift-click opens the details modal |

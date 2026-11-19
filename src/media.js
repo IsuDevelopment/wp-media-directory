@@ -162,16 +162,35 @@ Attachment.prototype.initialize = function () {
 	this.listenTo( this.model, 'change:imdFolders', this.render );
 };
 
+/**
+ * Whether a collection is a library query the folders may filter.
+ *
+ * "Edit gallery"/"Edit playlist" grids are a Selection built from
+ * `wp.media.query( { post__in, query: true } )` (block editor MediaUpload), so
+ * `query` alone passes; setting folder props there re-queries the gallery
+ * down to "folder ∩ gallery" and drops its files.
+ *
+ * @param {Object} collection Attachments collection.
+ * @return {boolean} True for a real library query.
+ */
+function isLibrary( collection ) {
+	const props = collection?.props;
+
+	return (
+		!! props?.get( 'query' ) &&
+		! ( collection instanceof media.model.Selection ) &&
+		! props.get( 'post__in' )
+	);
+}
+
 Attachment.prototype.render = function () {
 	attachmentRender.apply( this, arguments );
 
-	const props = this.collection?.props;
-
-	if ( props?.get( 'query' ) ) {
+	if ( isLibrary( this.collection ) ) {
 		decorate(
 			this.el,
 			this.model,
-			normalizeFolder( props.get( config.folderVar ) )
+			normalizeFolder( this.collection.props.get( config.folderVar ) )
 		);
 	}
 
@@ -367,8 +386,7 @@ const browserDispose = Browser.prototype.dispose;
 
 Browser.prototype.initialize = function () {
 	const props = this.collection?.props;
-	// Only real library queries; skip "Edit gallery" and other selection-only grids.
-	const enabled = !! props?.get( 'query' );
+	const enabled = isLibrary( this.collection );
 	let view = null;
 
 	if ( enabled ) {
